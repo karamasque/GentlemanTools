@@ -10,6 +10,7 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly AuthService _auth;
     private readonly SteamService _steam;
+    private readonly FirebaseMembershipService _membership;
 
     /// <summary>The first-run welcome overlay VM (hosted at the window root, shown via its IsOpen).</summary>
     public OnboardingViewModel Onboarding { get; }
@@ -32,25 +33,49 @@ public partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(FooterStatus))]
     private bool _isGuest = true;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VipBadgeVisible))]
+    private bool _isVip;
+
+    public bool VipBadgeVisible => IsVip;
+
+    [ObservableProperty]
+    private string _vipStatusTitle = "Standart";
+
     public bool IsRealUser => !IsGuest;
 
-    /// <summary>Bottom-of-pane line: version plus auth state. No username shown (privacy).</summary>
-    public string FooterStatus => $"{VersionLabel} · {(IsGuest ? Resources.Strings.Nav_Footer_Guest : Resources.Strings.Nav_Footer_LoggedIn)}";
+    /// <summary>Bottom-of-pane line: version plus auth state.</summary>
+    public string FooterStatus => $"{VersionLabel} · {(IsVip ? "💎 Gentleman VIP" : (IsRealUser ? "Giriş Yapıldı" : Resources.Strings.Nav_Footer_Guest))}";
 
     [ObservableProperty] private bool _isSigningIn;
     [ObservableProperty] private string? _signInError;
 
-    public MainViewModel(AuthService auth, SteamService steam, OnboardingViewModel onboarding)
+    public MainViewModel(AuthService auth, SteamService steam, OnboardingViewModel onboarding,
+        FirebaseMembershipService membership)
     {
         _auth = auth;
         _steam = steam;
         Onboarding = onboarding;
-        _auth.AuthStateChanged += () => IsGuest = _auth.IsGuest;
+        _membership = membership;
+
+        _auth.AuthStateChanged += () =>
+        {
+            IsGuest = _auth.IsGuest;
+            OnPropertyChanged(nameof(IsRealUser));
+            OnPropertyChanged(nameof(FooterStatus));
+        };
+        _membership.MembershipChanged += m =>
+        {
+            IsVip = m.IsActivePremium;
+            VipStatusTitle = m.StatusText;
+            OnPropertyChanged(nameof(FooterStatus));
+        };
     }
 
     public async Task InitializeAsync()
     {
         await _auth.InitializeAsync();
+        await _membership.InitializeAsync();
         IsGuest = _auth.IsGuest;
     }
 

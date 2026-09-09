@@ -18,10 +18,22 @@ public partial class SettingsViewModel : ObservableObject
     private readonly AuthService _auth;
     private readonly SteamService _steam;
     private readonly HubcapService _hubcap;
+    private readonly FirebaseMembershipService _membership;
 
     [ObservableProperty] private string? _displayName;
     [ObservableProperty] private string? _email;
     [ObservableProperty] private string? _avatarUrl;
+
+    // ── VIP Membership Properties ─────────────────────────────────────
+    [ObservableProperty] private bool _isVipActive;
+    [ObservableProperty] private string _vipStatusText = "Standart Üye";
+    [ObservableProperty] private int _vipDaysRemaining;
+
+    // License Key Redeem Form
+    [ObservableProperty] private string _licenseKeyInput = "";
+    [ObservableProperty] private bool _isRedeemingLicense;
+    [ObservableProperty] private string? _licenseRedeemMessage;
+    [ObservableProperty] private bool _licenseRedeemSuccess;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRealUser))]
@@ -222,13 +234,22 @@ public partial class SettingsViewModel : ObservableObject
     public Action? RequestRestartPrompt { get; set; }
 
     public SettingsViewModel(SettingsService settings, AuthService auth, SteamService steam,
-        HubcapService hubcap)
+        HubcapService hubcap, FirebaseMembershipService membership)
     {
         _settings = settings;
         _auth = auth;
         _steam = steam;
         _hubcap = hubcap;
+        _membership = membership;
+
         _auth.AuthStateChanged += RefreshAccount;
+        _membership.MembershipChanged += m =>
+        {
+            IsVipActive = m.IsActivePremium;
+            VipStatusText = m.StatusText;
+            VipDaysRemaining = m.DaysRemaining;
+        };
+
         RefreshAccount();
         RefreshSteam();
         _autoUpdateApps = settings.AutoUpdateApps; // init from saved value (default ON) without triggering Save
@@ -263,6 +284,11 @@ public partial class SettingsViewModel : ObservableObject
         AvatarUrl = _auth.AvatarUrl;
         IsBotProvisioned = _auth.IsBotProvisioned;
         if (!IsGuest) LoginRequiredMessage = null;
+
+        var m = _membership.CurrentMembership;
+        IsVipActive = m.IsActivePremium;
+        VipStatusText = m.StatusText;
+        VipDaysRemaining = m.DaysRemaining;
     }
 
     /// <summary>Hide the re-link banner for this session (returns next launch if still a bot account).</summary>
@@ -451,4 +477,38 @@ public partial class SettingsViewModel : ObservableObject
                 expiry.ToString("yyyy-MM-dd"));
         return usage;
     }
+
+    // ── VIP Key Redeem & Account ───────────────────────────────────
+
+    [RelayCommand]
+    private async Task RedeemLicenseKeyAsync()
+    {
+        if (IsRedeemingLicense) return;
+        string key = LicenseKeyInput.Trim();
+
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            LicenseRedeemMessage = "Lütfen bir lisans anahtarı girin.";
+            LicenseRedeemSuccess = false;
+            return;
+        }
+
+        IsRedeemingLicense = true;
+        LicenseRedeemMessage = null;
+        try
+        {
+            var result = await _membership.RedeemKeyAsync(key);
+            LicenseRedeemMessage = result.Message;
+            LicenseRedeemSuccess = result.Success;
+            if (result.Success)
+            {
+                LicenseKeyInput = "";
+            }
+        }
+        finally
+        {
+            IsRedeemingLicense = false;
+        }
+    }
 }
+

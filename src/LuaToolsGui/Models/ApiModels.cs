@@ -165,6 +165,7 @@ public class StoredAuth
     public string? DisplayName { get; set; }
     public string? Email { get; set; }
     public string? AvatarUrl { get; set; }
+    public string? UserId { get; set; }
 }
 
 /// <summary>Per-source UI metadata, mirroring src/lib/source-meta.ts on the website.</summary>

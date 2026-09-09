@@ -13,6 +13,12 @@ public static class AppConfig
 
     public const string ApiBaseUrl = "https://lua.tools";
 
+    // ── Firebase Configuration (Auth & Membership) ────────────────────
+    // Web API Key and Project ID for GentlemanStation Firebase
+    public const string FirebaseAuthApiKey = "AIzaSyAgZhuehteCEfQbRODnPQQUMNpv0IRV_N4";
+    public const string FirebaseProjectId = "gentlemanstation";
+    public const string FirebaseDatabaseUrl = "https://gentlemanstation-default-rtdb.firebaseio.com";
+
     // Bot-provisioned (Discord /login placeholder) accounts use this email domain. Detecting it on
     // startup lets the app prompt the user to re-link their full lua.tools account.
     public const string BotAccountEmailDomain = "@bot.lua.tools";

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Threading;
 using LuaToolsGui.Models;
 using LuaToolsGui.Services;
@@ -49,6 +49,7 @@ public partial class App : Application
                 services.AddSingleton<PluginInstallerService>();
                 services.AddTransient<DropInstallViewModel>(); // one per page (Home, Add)
                 services.AddSingleton<AuthService>();
+                services.AddSingleton<FirebaseMembershipService>();
                 services.AddSingleton<LuaToolsApiClient>();
                 services.AddSingleton<HubcapService>();
                 services.AddSingleton<UpdateService>();
@@ -258,6 +259,9 @@ public partial class App : Application
         // Steam for a lua change, so this registration is what makes that promise true — and it
         // previously only ever ran during a mode install through this app.
         _host.Services.GetRequiredService<UnlockerService>().EnsureLuaPathRegistered();
+
+        // Initialize Firebase Membership
+        _ = _host.Services.GetRequiredService<FirebaseMembershipService>().InitializeAsync();
 
         var main = _host.Services.GetRequiredService<MainViewModel>();
         var settingsVm = _host.Services.GetRequiredService<SettingsViewModel>();

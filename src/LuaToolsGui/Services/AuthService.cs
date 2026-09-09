@@ -25,6 +25,7 @@ public class AuthService
     public string? DisplayName { get; private set; }
     public string? Email { get; private set; }
     public string? AvatarUrl { get; private set; }
+    public string? UserId { get; private set; }
 
     /// <summary>True when a real (Discord) account is signed in. Guests have no session.</summary>
     public bool IsSignedIn => _refreshToken is not null;
@@ -56,6 +57,7 @@ public class AuthService
         DisplayName = stored.DisplayName;
         Email = stored.Email;
         AvatarUrl = stored.AvatarUrl;
+        UserId = stored.UserId;
 
         // Token still comfortably valid, or refresh succeeds → keep the session
         if (_expiresAt > DateTimeOffset.UtcNow.AddMinutes(2))
@@ -290,6 +292,7 @@ public class AuthService
 
         if (session.User is not null)
         {
+            UserId = session.User.Id;
             var meta = session.User.Metadata;
             DisplayName = meta?.CustomClaims?.GlobalName ?? meta?.FullName ?? meta?.Name ?? session.User.Email;
             Email = session.User.Email;
@@ -304,6 +307,7 @@ public class AuthService
             DisplayName = DisplayName,
             Email = Email,
             AvatarUrl = AvatarUrl,
+            UserId = UserId,
         });
     }
 
@@ -312,7 +316,7 @@ public class AuthService
         _accessToken = null;
         _refreshToken = null;
         _expiresAt = default;
-        DisplayName = Email = AvatarUrl = null;
+        DisplayName = Email = AvatarUrl = UserId = null;
         try { File.Delete(AuthFile); } catch { /* best effort */ }
     }
 
