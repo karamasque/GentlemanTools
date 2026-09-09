@@ -107,8 +107,8 @@ public static class AppConfig
     public static string GithubReleasesRepo => GithubReleasesRepos[0];
 
     // ── Plugin releases (the store-page plugin manager fetches these) ──────────────
-    public const string PluginReleasesOwner = "karamasque";
-    public const string PluginReleasesRepo = "GentlemanTools";
+    public const string PluginReleasesOwner = "madoiscool";
+    public const string PluginReleasesRepo = "LTSP";
 
     // ── GitHub proxy mirrors (for blocked/throttled regions, e.g. China) ──────────────
     // github.com / api.github.com are often unreachable in some countries. Any GitHub request is tried

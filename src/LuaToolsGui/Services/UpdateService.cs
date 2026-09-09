@@ -20,7 +20,7 @@ public class UpdateService
     private readonly UpdateManager[] _managers =
         AppConfig.GithubReleasesRepos
             .Select(repo => new UpdateManager(
-                new GithubSource(repo, accessToken: null, prerelease: false,
+                new GithubSource(repo, accessToken: null, prerelease: true,
                     downloader: new ProxiedFileDownloader())))
             .ToArray();
 
