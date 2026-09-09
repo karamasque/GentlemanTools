@@ -543,7 +543,7 @@ public class LuaVaultTests : IDisposable
         File.WriteAllText(Path.Combine(_plugIn, $"{AppId}_18234567.lua"), PinnedBuildLua);
         _vault.AdoptLooseBuildLuas(AppId);
         var variant = Assert.Single(_vault.GetVariants(AppId));
-        Assert.Equal("Build 18234567", variant.DisplayLabel);
+        Assert.Equal(string.Format(LuaToolsGui.Resources.Strings.Builds_Variant_Build, "18234567"), variant.DisplayLabel);
 
         _vault.Rename(AppId, variant.Hash, "pre-nerf patch");
 
@@ -562,7 +562,7 @@ public class LuaVaultTests : IDisposable
         _vault.Rename(AppId, hash, "temp");
         _vault.Rename(AppId, hash, "   ");
 
-        Assert.Equal("Build 18234567", _vault.GetVariants(AppId).Single().DisplayLabel);
+        Assert.Equal(string.Format(LuaToolsGui.Resources.Strings.Builds_Variant_Build, "18234567"), _vault.GetVariants(AppId).Single().DisplayLabel);
     }
 
     /// <summary>Deleting what Steam is currently running would orphan the live lua with no way back.</summary>

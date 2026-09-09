@@ -68,6 +68,9 @@ public partial class HomeViewModel : ObservableObject
 
     // ── Active unlocker mode ────────────────────────────────────────
     [ObservableProperty] private string _modeStatus = Resources.Strings.Home_NoModeSelected;
+    [ObservableProperty] private string _activeModeName = "BetterSteamTools";
+    [ObservableProperty] private string _steamPathDisplay = "C:\\Program Files (x86)\\Steam";
+    [ObservableProperty] private string _userDisplayName = "WexL";
 
     public HomeViewModel(SteamService steam, AuthService auth,
         SteamAppListCache appList, SteamAppInfoCache appInfo, CoverCache covers, DropInstallViewModel drop,
@@ -155,14 +158,32 @@ public partial class HomeViewModel : ObservableObject
         catch { /* leave the prior value (e.g. "Checking…") on any failure */ }
     }
 
-    private void RefreshMode() =>
+    [RelayCommand]
+    private void CopySteamPath()
+    {
+        if (_steam.EffectivePath is { } path)
+        {
+            try
+            {
+                System.Windows.Clipboard.SetText(path);
+                _toast.Show(Resources.Strings.Settings_Title, "Steam dizini panoya kopyalandı.", error: false);
+            }
+            catch { /* clipboard access exception handling */ }
+        }
+    }
+
+    private void RefreshMode()
+    {
+        ActiveModeName = _unlocker.SelectedModeDisplayName ?? "BetterSteamTools";
         ModeStatus = _unlocker.SelectedModeDisplayName is { } name
             ? string.Format(Resources.Strings.Home_ModeIs, name)
             : Resources.Strings.Home_NoModeSelected;
+    }
 
     private void RefreshSteam()
     {
         SteamFound = _steam.IsValid;
+        SteamPathDisplay = _steam.EffectivePath ?? "C:\\Program Files (x86)\\Steam";
         SteamStatus = SteamFound
             ? string.Format(Resources.Strings.Home_SteamDetected, _steam.EffectivePath)
             : Resources.Strings.Home_SteamNotFound;
@@ -208,6 +229,7 @@ public partial class HomeViewModel : ObservableObject
     private void RefreshAccount()
     {
         IsSignedIn = _auth.IsSignedIn;
+        UserDisplayName = _auth.DisplayName ?? (IsSignedIn ? "WexL" : "Misafir");
         AccountStatus = IsSignedIn
             ? (_auth.DisplayName is { } n ? string.Format(Resources.Strings.Home_SignedInAs, n) : Resources.Strings.Home_SignedIn)
             : Resources.Strings.Home_BrowsingAsGuest;

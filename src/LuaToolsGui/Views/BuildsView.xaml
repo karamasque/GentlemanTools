@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="LuaToolsGui.Views.BuildsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -191,27 +191,30 @@
 
         <!-- One game in the left-hand list: cover thumb, name, and what build it's running. -->
         <DataTemplate x:Key="GameRowTemplate">
-            <Grid Margin="0,0,0,2" DataContextChanged="GameRow_DataContextChanged" Loaded="GameRow_Loaded">
+            <Grid Margin="0,2,0,2" DataContextChanged="GameRow_DataContextChanged" Loaded="GameRow_Loaded">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Border
-                    Width="46"
-                    Height="22"
+                    Width="48"
+                    Height="27"
                     Background="#11FFFFFF"
                     ClipToBounds="True"
-                    CornerRadius="3">
+                    CornerRadius="4">
                     <Image Source="{Binding Cover}" Stretch="UniformToFill" />
                 </Border>
-                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                     <TextBlock
-                        FontSize="12.5"
+                        FontSize="13"
+                        FontWeight="Medium"
+                        Foreground="{DynamicResource TextMainBrush}"
                         Text="{Binding Name}"
-                        TextTrimming="CharacterEllipsis" />
+                        TextTrimming="CharacterEllipsis"
+                        ToolTip="{Binding Name}" />
                     <TextBlock
-                        FontSize="10"
-                        Foreground="#8b96f0"
+                        FontSize="10.5"
+                        Foreground="{DynamicResource AccentPrimaryBrush}"
                         Text="{Binding VariantBadge}"
                         TextTrimming="CharacterEllipsis"
                         Visibility="{Binding VariantBadge, Converter={StaticResource NullToCollapsed}}" />
@@ -233,30 +236,32 @@
                         Text="{Binding Label}"
                         TextTrimming="CharacterEllipsis" />
                     <TextBlock
-                        FontSize="10.5"
-                        Foreground="#6b7280"
+                        FontSize="11"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
                         Text="{Binding Meta}"
                         TextTrimming="CharacterEllipsis" />
                 </StackPanel>
                 <Border
                     Grid.Column="1"
                     Margin="8,0,0,0"
-                    Padding="6,1"
+                    Padding="6,2"
                     VerticalAlignment="Center"
-                    Background="#1e3a2a"
+                    Background="{DynamicResource SuccessBgBrush}"
+                    BorderBrush="{DynamicResource SuccessBrush}"
+                    BorderThickness="1"
                     CornerRadius="4"
                     Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}">
                     <TextBlock
                         FontSize="9.5"
                         FontWeight="SemiBold"
-                        Foreground="#6ee7a0"
+                        Foreground="{DynamicResource SuccessBrush}"
                         Text="{x:Static res:Strings.Builds_Active}" />
                 </Border>
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid x:Name="Root" Margin="8,16,16,8">
+    <Grid x:Name="Root" Margin="{DynamicResource StandardPageMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -272,21 +277,15 @@
                 <TextBlock
                     FontSize="22"
                     FontWeight="Bold"
+                    Foreground="{DynamicResource TextMainBrush}"
                     Text="{x:Static res:Strings.Builds_Title}" />
                 <TextBlock
-                    Margin="0,2,0,0"
-                    FontSize="11.5"
-                    Foreground="#9ca3af"
+                    Margin="0,4,0,0"
+                    FontSize="12.5"
+                    Foreground="{DynamicResource TextSecondaryBrush}"
                     Text="{x:Static res:Strings.Builds_Subtitle}"
                     TextWrapping="Wrap" />
             </StackPanel>
-            <!-- Save lives up here rather than in a banner over the depot list: it only appears mid-edit,
-                 and anything that appears/disappears inside the page body shoves the whole list up and
-                 down. In the header row nothing below it moves.
-
-                 Both buttons key off HasEditBase, which now means exactly "a build or preset is part-way
-                 through an edit". Editing the DEFAULT shows neither: it follows the live lua by itself,
-                 so there is nothing to save it to. -->
             <StackPanel
                 Grid.Column="1"
                 VerticalAlignment="Top"
@@ -303,24 +302,21 @@
                     Content="{x:Static res:Strings.Builds_Action_SaveAsNew}"
                     Icon="{ui:SymbolIcon Bookmark24}"
                     Visibility="{Binding HasEditBase, Converter={StaticResource BoolToVis}}" />
-                <!-- Enters select-depots mode on the table below rather than downloading straight
-                     away: a game usually has several depots and the user picks which ones. -->
                 <ui:Button
                     Margin="8,0,0,0"
                     Command="{Binding StartDepotDownloadCommand}"
                     Content="{x:Static res:Strings.Builds_Action_Download}"
                     Icon="{ui:SymbolIcon ArrowDownload24}"
                     IsEnabled="{Binding HasSelection}"
+                    ToolTip="İndirme işlemi için bir oyun seçin"
                     Visibility="{Binding IsBrowseMode, Converter={StaticResource BoolToVis}}" />
-                <!-- Jump to this game on the Manage page (its detail flyout). The return trip for
-                     Manage's "Manage Build". Disabled rather than hidden so the header doesn't reflow
-                     when you select a game. -->
                 <ui:Button
                     Margin="8,0,0,0"
                     Command="{Binding OpenInManageCommand}"
                     Content="{x:Static res:Strings.Nav_Manage}"
                     Icon="{ui:SymbolIcon Games24}"
-                    IsEnabled="{Binding HasSelection}" />
+                    IsEnabled="{Binding HasSelection}"
+                    ToolTip="Seçili oyunu Oyunları Yönet sayfasında açar" />
                 <ui:Button
                     Margin="8,0,0,0"
                     Command="{Binding RefreshCommand}"
@@ -329,19 +325,19 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1" Margin="0,14,0,0">
+        <Grid Grid.Row="1" Margin="0,18,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260" />
+                <ColumnDefinition Width="340" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <!-- ── Left: game picker ────────────────────────────────── -->
             <Border
-                Padding="10"
-                Background="#0DFFFFFF"
-                BorderBrush="#1FFFFFFF"
+                Padding="12"
+                Background="{DynamicResource SurfacePrimaryBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
                 BorderThickness="1"
-                CornerRadius="8">
+                CornerRadius="{DynamicResource RadiusCard}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -357,8 +353,8 @@
                         Grid.Row="1"
                         Margin="4,16,4,0"
                         VerticalAlignment="Top"
-                        FontSize="11.5"
-                        Foreground="#6b7280"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
                         Text="{Binding EmptyMessage}"
                         TextWrapping="Wrap"
                         Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
@@ -366,7 +362,7 @@
                     <ListBox
                         x:Name="GameList"
                         Grid.Row="1"
-                        Margin="-4,8,-4,0"
+                        Margin="-4,10,-4,0"
                         Background="Transparent"
                         BorderThickness="0"
                         ItemTemplate="{StaticResource GameRowTemplate}"
@@ -375,16 +371,16 @@
                         SelectedItem="{Binding SelectedGame}">
                         <ListBox.ItemContainerStyle>
                             <Style BasedOn="{StaticResource {x:Type ListBoxItem}}" TargetType="ListBoxItem">
-                                <Setter Property="Padding" Value="6,5" />
+                                <Setter Property="Padding" Value="8,6" />
+                                <Setter Property="Margin" Value="2,1" />
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Cursor" Value="Hand" />
                             </Style>
                         </ListBox.ItemContainerStyle>
                     </ListBox>
 
-                    <!-- Pager. Deliberately minimal: prev / "Page x of y" / next. The base VM also exposes
-                         windowed PageNumbers (as Manage renders), but there's no room for them here, and
-                         the list is a picker, not a browsing grid. Always shown (even on a single page), so the results-per-page control stays reachable; the arrows just disable. -->
-                    <StackPanel Grid.Row="2" Margin="0,8,0,0">
+                    <!-- Pager -->
+                    <StackPanel Grid.Row="2" Margin="0,10,0,0">
                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                             <ui:Button
                                 Padding="8,2"
@@ -394,10 +390,10 @@
                                 IsEnabled="{Binding CanGoPrev}" />
                             <TextBlock
                                 MinWidth="90"
-                                Margin="6,0"
+                                Margin="8,0"
                                 VerticalAlignment="Center"
-                                FontSize="11.5"
-                                Foreground="#9ca3af"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextSecondaryBrush}"
                                 Text="{Binding PageLabel}"
                                 TextAlignment="Center" />
                             <ui:Button
@@ -408,14 +404,14 @@
                                 IsEnabled="{Binding CanGoNext}" />
                         </StackPanel>
                         <StackPanel
-                            Margin="0,6,0,0"
+                            Margin="0,8,0,0"
                             HorizontalAlignment="Center"
                             Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,6,0"
                                 VerticalAlignment="Center"
-                                FontSize="11"
-                                Foreground="#6b7280"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextMutedBrush}"
                                 Text="{x:Static res:Strings.Manage_ResultsPerPage}" />
                             <ComboBox
                                 MinWidth="66"
@@ -428,25 +424,40 @@
             </Border>
 
             <!-- ── Right: the selected game's builds ────────────────── -->
-            <Grid Grid.Column="1" Margin="14,0,0,0">
+            <Grid Grid.Column="1" Margin="18,0,0,0">
                 <!-- Nothing picked yet -->
-                <StackPanel
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
+                <Border
+                    Padding="32"
+                    Background="{DynamicResource SurfacePrimaryBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource RadiusCard}"
                     Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}">
-                    <ui:SymbolIcon
+                    <StackPanel
                         HorizontalAlignment="Center"
-                        FontSize="42"
-                        Foreground="#4b5563"
-                        Symbol="BranchFork24" />
-                    <TextBlock
-                        Margin="0,10,0,0"
-                        HorizontalAlignment="Center"
-                        FontSize="13"
-                        Foreground="#6b7280"
-                        Text="{x:Static res:Strings.Builds_NoSelection}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
+                        VerticalAlignment="Center">
+                        <ui:SymbolIcon
+                            HorizontalAlignment="Center"
+                            FontSize="48"
+                            Foreground="{DynamicResource TextMutedBrush}"
+                            Symbol="BranchFork24" />
+                        <TextBlock
+                            Margin="0,14,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource TextMainBrush}"
+                            Text="Bir oyun seçin" />
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            Foreground="{DynamicResource TextSecondaryBrush}"
+                            Text="{x:Static res:Strings.Builds_NoSelection}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
 
                 <Grid Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
                     <Grid.RowDefinitions>

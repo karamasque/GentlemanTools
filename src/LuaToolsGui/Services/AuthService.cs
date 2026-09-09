@@ -368,18 +368,18 @@ public class AuthService
 
     private static string ResultPage(bool ok, string? error) => $$"""
         <!doctype html>
-        <html><head><meta charset="utf-8"><title>LuaTools</title>
+        <html><head><meta charset="utf-8"><title>GentlemanStation</title>
         <style>
-          body { background:#0b0b12; color:#e5e7eb; font-family:'Segoe UI',sans-serif;
+          body { background:#0a0c10; color:#e5e7eb; font-family:'Segoe UI',sans-serif;
                  display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
-          .card { text-align:center; padding:2.5rem 3rem; background:#14141c;
-                  border:1px solid rgba(255,255,255,.08); border-radius:14px; }
-          h1 { font-size:1.3rem; margin:0 0 .5rem; color:{{(ok ? "#a78bfa" : "#f87171")}}; }
-          p { color:#9ca3af; font-size:.95rem; margin:0; }
+          .card { text-align:center; padding:2.5rem 3rem; background:#141720;
+                  border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.5); }
+          h1 { font-size:1.35rem; margin:0 0 .5rem; color:{{(ok ? "#38bdf8" : "#f87171")}}; }
+          p { color:#94a3b8; font-size:.95rem; margin:0; line-height:1.5; }
         </style></head>
         <body><div class="card">
-          <h1>{{(ok ? "Signed in!" : "Sign-in failed")}}</h1>
-          <p>{{(ok ? "You can close this tab and return to LuaTools." : WebUtility.HtmlEncode(error ?? "Please try again from the app."))}}</p>
+          <h1>{{(ok ? "Giriş Başarılı! · Signed in!" : "Giriş Başarısız · Sign-in failed")}}</h1>
+          <p>{{(ok ? "Bu sekmeyi kapatıp GentlemanStation uygulamasına dönebilirsiniz.<br><small style='color:#64748b'>You can close this tab and return to GentlemanStation.</small>" : WebUtility.HtmlEncode(error ?? "Lütfen uygulamadan tekrar deneyin."))}}</p>
         </div></body></html>
         """;
 }

@@ -9,267 +9,684 @@
     xmlns:views="clr-namespace:LuaToolsGui.Views"
     xmlns:vm="clr-namespace:LuaToolsGui.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:HomeViewModel}"
-    TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    TextElement.Foreground="{DynamicResource TextMainBrush}"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <!-- Clickable stat tile: the card look, with a hover brighten (same idiom as the recent cards). -->
-        <Style x:Key="CardTileButton" TargetType="Button">
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Stretch" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="B" Padding="16,14" Background="#0DFFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="10">
-                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="B" Property="Background" Value="#18FFFFFF" />
-                                <Setter TargetName="B" Property="BorderBrush" Value="#33FFFFFF" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <!-- Clickable status row: transparent, hover brighten. -->
-        <Style x:Key="StatusRowButton" TargetType="Button">
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="B" Padding="6,5" Background="Transparent" CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="B" Property="Background" Value="#14FFFFFF" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
+    <Grid Background="{DynamicResource BgMainBrush}">
+        <ScrollViewer x:Name="Root" VerticalScrollBarVisibility="Auto" Padding="24,20,24,32">
+            <StackPanel MaxWidth="920" HorizontalAlignment="Stretch">
 
-    <Grid>
-    <ScrollViewer x:Name="Root" VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="760" Margin="8,16,16,24">
+                <!-- ── 1. Hero Header Area ── -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <!-- Greeting -->
-            <TextBlock
-                FontSize="22"
-                FontWeight="Bold"
-                Text="{x:Static res:Strings.Home_Welcome}" />
-
-            <!-- Stat tiles (clickable) -->
-            <UniformGrid Margin="0,18,0,0" Columns="2" Rows="1">
-                <!-- Luas on board → Manage -->
-                <Button Margin="0,0,6,0" Command="{Binding OpenManageCommand}" Style="{StaticResource CardTileButton}">
-                    <StackPanel>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock
-                            FontSize="28"
+                            FontSize="26"
                             FontWeight="Bold"
-                            Foreground="#a78bfa"
-                            Text="{Binding GameCount}" />
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            FontSize="12"
-                            Foreground="#9ca3af"
-                            Text="{x:Static res:Strings.Home_LuasOnBoard}" />
-                    </StackPanel>
-                </Button>
-                <!-- Plugin status → Plugin page (+ inline Install when not installed) -->
-                <Button Margin="6,0,0,0" Command="{Binding OpenPluginCommand}" Style="{StaticResource CardTileButton}">
-                    <StackPanel>
-                        <TextBlock
-                            FontSize="12"
-                            Foreground="#6b7280"
-                            Text="{x:Static res:Strings.Home_PluginStatus}" />
+                            Foreground="{DynamicResource TextMainBrush}"
+                            Text="{x:Static res:Strings.Home_Welcome}" />
                         <TextBlock
                             Margin="0,4,0,0"
-                            FontSize="15"
-                            FontWeight="SemiBold"
-                            Foreground="{Binding PluginStatusColor}"
-                            Text="{Binding PluginStatusText}"
-                            TextTrimming="CharacterEllipsis" />
-                        <ui:Button
-                            Margin="0,10,0,0"
-                            Padding="10,4"
-                            Appearance="Primary"
-                            Command="{Binding InstallPluginCommand}"
-                            Content="{x:Static res:Strings.Plugin_Btn_Install}"
-                            IsEnabled="{Binding NotInstallingPlugin}"
-                            Visibility="{Binding ShowPluginInstall, Converter={StaticResource BoolToVis}}" />
+                            FontSize="13.5"
+                            Foreground="{DynamicResource TextSecondaryBrush}"
+                            Text="Oyunlarınızı, modlarınızı ve eklentilerinizi tek bir yerden yönetin." />
                     </StackPanel>
-                </Button>
-            </UniformGrid>
 
-            <!-- Status: Steam + account -->
-            <Border
-                Margin="0,12,0,0"
-                Padding="10,8"
-                Background="#0DFFFFFF"
-                BorderBrush="#14FFFFFF"
-                BorderThickness="1"
-                CornerRadius="10">
-                <StackPanel>
-                    <!-- Steam → Settings -->
-                    <Button Command="{Binding OpenSettingsCommand}" Style="{StaticResource StatusRowButton}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="22" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <ui:SymbolIcon
-                                Margin="0,1,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                Symbol="Games24">
-                                <ui:SymbolIcon.Style>
-                                    <Style TargetType="ui:SymbolIcon">
-                                        <Setter Property="Foreground" Value="#f87171" />
+                    <!-- User Session Pill -->
+                    <Button
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Command="{Binding OpenSettingsCommand}"
+                        Style="{DynamicResource GentlemanSecondaryButton}"
+                        Padding="12,8">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Status indicator dot -->
+                            <Ellipse
+                                Width="8"
+                                Height="8"
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{DynamicResource WarningBrush}" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding SteamFound}" Value="True">
-                                                <Setter Property="Foreground" Value="#34d399" />
+                                            <DataTrigger Binding="{Binding IsSignedIn}" Value="True">
+                                                <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </ui:SymbolIcon.Style>
-                            </ui:SymbolIcon>
-                            <TextBlock
-                                Grid.Column="1"
-                                Margin="10,0,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="12.5"
-                                Foreground="#d1d5db"
-                                Text="{Binding SteamStatus}"
-                                TextTrimming="CharacterEllipsis" />
-                        </Grid>
-                    </Button>
-
-                    <Separator Margin="0,10" Background="#14FFFFFF" />
-
-                    <!-- Account → Settings -->
-                    <Button Command="{Binding OpenSettingsCommand}" Style="{StaticResource StatusRowButton}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="22" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                                </Ellipse.Style>
+                            </Ellipse>
                             <ui:SymbolIcon
-                                Margin="0,1,0,0"
+                                Margin="0,0,6,0"
                                 VerticalAlignment="Center"
-                                FontSize="16"
-                                Foreground="#a78bfa"
+                                FontSize="14"
+                                Foreground="{DynamicResource AccentPrimaryBrush}"
                                 Symbol="Person24" />
                             <TextBlock
-                                Grid.Column="1"
-                                Margin="10,0,0,0"
                                 VerticalAlignment="Center"
+                                FontWeight="SemiBold"
                                 FontSize="12.5"
-                                Foreground="#d1d5db"
-                                Text="{Binding AccountStatus}" />
+                                Foreground="{DynamicResource TextMainBrush}"
+                                Text="{Binding UserDisplayName}" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- ── 2. Summary Stat Cards Grid (4 Columns) ── -->
+                <UniformGrid Columns="4" Margin="0,0,0,20">
+                    
+                    <!-- Card 1: Eklenen Oyunlar -->
+                    <Button
+                        Margin="0,0,6,0"
+                        Command="{Binding OpenManageCommand}"
+                        Style="{DynamicResource GentlemanStatCardButton}"
+                        ToolTip="{x:Static res:Strings.Home_LuasOnBoard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Background="{DynamicResource AccentBgBrush}"
+                                    CornerRadius="{DynamicResource RadiusSmall}">
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        Foreground="{DynamicResource AccentPrimaryBrush}"
+                                        Symbol="Games24" />
+                                </Border>
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="Medium"
+                                    Foreground="{DynamicResource TextSecondaryBrush}"
+                                    Text="{x:Static res:Strings.Home_LuasOnBoard}" />
+                            </StackPanel>
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,12,0,4"
+                                FontSize="28"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource TextMainBrush}"
+                                Text="{Binding GameCount}" />
+
+                            <TextBlock
+                                Grid.Row="2"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextMutedBrush}"
+                                Text="Kütüphanede hazır" />
                         </Grid>
                     </Button>
 
-                    <Separator Margin="0,10" Background="#14FFFFFF" />
-
-                    <!-- Active mode → Mode -->
-                    <Button Command="{Binding OpenModeCommand}" Style="{StaticResource StatusRowButton}">
+                    <!-- Card 2: Eklenti Durumu -->
+                    <Button
+                        Margin="6,0,6,0"
+                        Command="{Binding OpenPluginCommand}"
+                        Style="{DynamicResource GentlemanStatCardButton}"
+                        ToolTip="{x:Static res:Strings.Home_PluginStatus}">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="22" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Background="#1E4AA8FF"
+                                    CornerRadius="{DynamicResource RadiusSmall}">
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        Foreground="{DynamicResource AccentSecondaryBrush}"
+                                        Symbol="PuzzlePiece24" />
+                                </Border>
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="Medium"
+                                    Foreground="{DynamicResource TextSecondaryBrush}"
+                                    Text="{x:Static res:Strings.Home_PluginStatus}" />
+                            </StackPanel>
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,14,0,2"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="{Binding PluginStatusColor}"
+                                Text="{Binding PluginStatusText}"
+                                TextTrimming="CharacterEllipsis" />
+
+                            <StackPanel Grid.Row="2">
+                                <Button
+                                    Margin="0,4,0,0"
+                                    Padding="8,3"
+                                    HorizontalAlignment="Left"
+                                    Command="{Binding InstallPluginCommand}"
+                                    IsEnabled="{Binding NotInstallingPlugin}"
+                                    Style="{DynamicResource GentlemanPrimaryButton}"
+                                    Visibility="{Binding ShowPluginInstall, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock FontSize="11" Text="{x:Static res:Strings.Plugin_Btn_Install}" />
+                                </Button>
+                                <TextBlock
+                                    FontSize="11.5"
+                                    Foreground="{DynamicResource TextMutedBrush}"
+                                    Text="Steam mağaza butonu"
+                                    Visibility="{Binding ShowPluginInstall, Converter={StaticResource InverseBoolToVis}}" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Card 3: Aktif Mod -->
+                    <Button
+                        Margin="6,0,6,0"
+                        Command="{Binding OpenModeCommand}"
+                        Style="{DynamicResource GentlemanStatCardButton}"
+                        ToolTip="{x:Static res:Strings.Nav_Mode}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Background="{DynamicResource AccentBgBrush}"
+                                    CornerRadius="{DynamicResource RadiusSmall}">
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        Foreground="{DynamicResource AccentPrimaryBrush}"
+                                        Symbol="Options24" />
+                                </Border>
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="Medium"
+                                    Foreground="{DynamicResource TextSecondaryBrush}"
+                                    Text="Aktif Mod" />
+                            </StackPanel>
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,14,0,2"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextMainBrush}"
+                                Text="{Binding ActiveModeName}"
+                                TextTrimming="CharacterEllipsis" />
+
+                            <TextBlock
+                                Grid.Row="2"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextMutedBrush}"
+                                Text="Kilit açıcı arka ucu" />
+                        </Grid>
+                    </Button>
+
+                    <!-- Card 4: Steam Bağlantısı -->
+                    <Button
+                        Margin="6,0,0,0"
+                        Command="{Binding OpenSettingsCommand}"
+                        Style="{DynamicResource GentlemanStatCardButton}"
+                        ToolTip="Steam Bağlantı Durumu">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Background="{DynamicResource SuccessBgBrush}"
+                                    CornerRadius="{DynamicResource RadiusSmall}">
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        Foreground="{DynamicResource SuccessBrush}"
+                                        Symbol="CheckmarkCircle24" />
+                                </Border>
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="Medium"
+                                    Foreground="{DynamicResource TextSecondaryBrush}"
+                                    Text="Steam Durumu" />
+                            </StackPanel>
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,14,0,2"
+                                FontSize="15"
+                                FontWeight="SemiBold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Bağlı" />
+                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SteamFound}" Value="False">
+                                                <Setter Property="Text" Value="Bulunamadı" />
+                                                <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <TextBlock
+                                Grid.Row="2"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextMutedBrush}"
+                                Text="İstemci entegre" />
+                        </Grid>
+                    </Button>
+                </UniformGrid>
+
+                <!-- ── 3. Sistem Durumu (System Status Panel) ── -->
+                <Border
+                    Margin="0,0,0,20"
+                    Padding="18,16"
+                    Background="{DynamicResource SurfacePrimaryBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource RadiusCard}">
+                    <StackPanel>
+                        <!-- Panel Header -->
+                        <Grid Margin="0,0,0,12">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    Foreground="{DynamicResource AccentPrimaryBrush}"
+                                    Symbol="ShieldTask24" />
+                                <TextBlock
+                                    FontSize="14.5"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextMainBrush}"
+                                    Text="Sistem Durumu" />
+                            </StackPanel>
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextMutedBrush}"
+                                Text="Entegrasyon ve hesap detayları" />
+                        </Grid>
+
+                        <Separator Background="{DynamicResource BorderSubtleBrush}" Margin="0,0,0,8" />
+
+                        <!-- Row 1: Steam -->
+                        <Button
+                            Command="{Binding OpenSettingsCommand}"
+                            Style="{DynamicResource GentlemanStatusRowButton}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Grid.Column="0"
+                                    Width="32"
+                                    Height="32"
+                                    Margin="0,0,12,0"
+                                    Background="{DynamicResource SurfaceSecondaryBrush}"
+                                    CornerRadius="{DynamicResource RadiusSmall}">
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        Symbol="Games24">
+                                        <ui:SymbolIcon.Style>
+                                            <Style TargetType="ui:SymbolIcon">
+                                                <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SteamFound}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:SymbolIcon.Style>
+                                    </ui:SymbolIcon>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock
+                                        FontSize="13"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextMainBrush}"
+                                        Text="Steam İstemcisi" />
+                                    <TextBlock
+                                        Margin="0,2,0,0"
+                                        FontSize="11.5"
+                                        Foreground="{DynamicResource TextSecondaryBrush}"
+                                        Text="{Binding SteamPathDisplay}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- Copy Button -->
+                                    <Button
+                                        Margin="0,0,8,0"
+                                        Padding="8,5"
+                                        Command="{Binding CopySteamPathCommand}"
+                                        Style="{DynamicResource GentlemanSecondaryButton}"
+                                        ToolTip="Dizini Kopyala">
+                                        <ui:SymbolIcon FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Symbol="Copy24" />
+                                    </Button>
+                                    <!-- Status Pill -->
+                                    <Border
+                                        Padding="10,4"
+                                        CornerRadius="{DynamicResource RadiusPill}">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource SuccessBgBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SteamFound}" Value="False">
+                                                        <Setter Property="Background" Value="{DynamicResource ErrorBgBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock
+                                            FontSize="11"
+                                            FontWeight="SemiBold">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Bağlı" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SteamFound}" Value="False">
+                                                            <Setter Property="Text" Value="Bulunamadı" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+
+                        <Separator Background="{DynamicResource BorderSubtleBrush}" Margin="0,6" />
+
+                        <!-- Row 2: Account -->
+                        <Button
+                            Command="{Binding OpenSettingsCommand}"
+                            Style="{DynamicResource GentlemanStatusRowButton}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Grid.Column="0"
+                                    Width="32"
+                                    Height="32"
+                                    Margin="0,0,12,0"
+                                    Background="{DynamicResource SurfaceSecondaryBrush}"
+                                    CornerRadius="{DynamicResource RadiusSmall}">
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        Foreground="{DynamicResource AccentPrimaryBrush}"
+                                        Symbol="Person24" />
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock
+                                        FontSize="13"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextMainBrush}"
+                                        Text="Kullanıcı Hesabı" />
+                                    <TextBlock
+                                        Margin="0,2,0,0"
+                                        FontSize="11.5"
+                                        Foreground="{DynamicResource TextSecondaryBrush}"
+                                        Text="{Binding AccountStatus}" />
+                                </StackPanel>
+
+                                <Border
+                                    Grid.Column="2"
+                                    Padding="10,4"
+                                    VerticalAlignment="Center"
+                                    CornerRadius="{DynamicResource RadiusPill}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource AccentBgBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSignedIn}" Value="False">
+                                                    <Setter Property="Background" Value="{DynamicResource WarningBgBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Oturum Açık" />
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSignedIn}" Value="False">
+                                                        <Setter Property="Text" Value="Misafir" />
+                                                        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </Grid>
+                        </Button>
+
+                        <Separator Background="{DynamicResource BorderSubtleBrush}" Margin="0,6" />
+
+                        <!-- Row 3: Active Mode -->
+                        <Button
+                            Command="{Binding OpenModeCommand}"
+                            Style="{DynamicResource GentlemanStatusRowButton}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Grid.Column="0"
+                                    Width="32"
+                                    Height="32"
+                                    Margin="0,0,12,0"
+                                    Background="{DynamicResource SurfaceSecondaryBrush}"
+                                    CornerRadius="{DynamicResource RadiusSmall}">
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        Foreground="{DynamicResource AccentSecondaryBrush}"
+                                        Symbol="Options24" />
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock
+                                        FontSize="13"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextMainBrush}"
+                                        Text="Kilit Açıcı Modu" />
+                                    <TextBlock
+                                        Margin="0,2,0,0"
+                                        FontSize="11.5"
+                                        Foreground="{DynamicResource TextSecondaryBrush}"
+                                        Text="{Binding ModeStatus}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+
+                                <Border
+                                    Grid.Column="2"
+                                    Padding="10,4"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource AccentBgBrush}"
+                                    CornerRadius="{DynamicResource RadiusPill}">
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource AccentPrimaryBrush}"
+                                        Text="Etkin" />
+                                </Border>
+                            </Grid>
+                        </Button>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- ── 4. Drag-and-Drop Installation Box ── -->
+                <views:DropZone Margin="0,0,0,24" DataContext="{Binding Drop}" />
+
+                <!-- ── 5. Son Eklenenler (Recently Added Strip) ── -->
+                <StackPanel Visibility="{Binding HasRecent, Converter={StaticResource BoolToVis}}">
+                    <Grid Margin="0,0,0,14">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon
-                                Margin="0,1,0,0"
+                                Margin="0,0,8,0"
                                 VerticalAlignment="Center"
                                 FontSize="16"
-                                Foreground="#a78bfa"
-                                Symbol="Options24" />
+                                Foreground="{DynamicResource AccentSecondaryBrush}"
+                                Symbol="Clock24" />
                             <TextBlock
-                                Grid.Column="1"
-                                Margin="10,0,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="12.5"
-                                Foreground="#d1d5db"
-                                Text="{Binding ModeStatus}"
-                                TextTrimming="CharacterEllipsis" />
-                        </Grid>
-                    </Button>
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextMainBrush}"
+                                Text="{x:Static res:Strings.Home_RecentlyAdded}" />
+                        </StackPanel>
+                        <!-- See All Action -->
+                        <Button
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Command="{Binding OpenManageCommand}"
+                            Style="{DynamicResource GentlemanSecondaryButton}"
+                            Padding="10,4">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontSize="12" FontWeight="Medium" Text="Tümünü Gör" />
+                                <ui:SymbolIcon Margin="4,0,0,0" FontSize="11" Symbol="ArrowRight24" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding Recent}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="4" HorizontalAlignment="Stretch" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Margin="4,0,4,12"
+                                    Padding="0"
+                                    Command="{Binding DataContext.OpenGameCommand, ElementName=Root}"
+                                    CommandParameter="{Binding}"
+                                    Cursor="Hand"
+                                    ToolTip="{x:Static res:Strings.Home_ViewDetails}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border
+                                                x:Name="Card"
+                                                Height="160"
+                                                Background="{DynamicResource SurfacePrimaryBrush}"
+                                                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{DynamicResource RadiusCard}"
+                                                ClipToBounds="True"
+                                                SnapsToDevicePixels="True">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="108" />
+                                                        <RowDefinition Height="*" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- 16:9 Cover Container with gradient overlay -->
+                                                    <Grid Grid.Row="0">
+                                                        <Image
+                                                            Source="{Binding Cover}"
+                                                            Stretch="UniformToFill"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center" />
+                                                        <!-- Gradient Bottom Shade -->
+                                                        <Rectangle Fill="{DynamicResource GameCoverOverlayGradient}" />
+                                                    </Grid>
+
+                                                    <!-- Game Details -->
+                                                    <Border Grid.Row="1" Padding="10,8" Background="{DynamicResource SurfacePrimaryBrush}">
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock
+                                                                FontSize="12.5"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="{DynamicResource TextMainBrush}"
+                                                                Text="{Binding Name}"
+                                                                TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock
+                                                                Margin="0,2,0,0"
+                                                                FontSize="11"
+                                                                Foreground="{DynamicResource TextMutedBrush}"
+                                                                Text="{Binding AppId, StringFormat='App ID: {0}'}" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Card" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                                                    <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource BorderHighlightBrush}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
-            </Border>
 
-            <!-- Drag-and-drop install -->
-            <views:DropZone Margin="0,12,0,0" DataContext="{Binding Drop}" />
-
-            <!-- Recently added -->
-            <StackPanel Margin="0,22,0,0" Visibility="{Binding HasRecent, Converter={StaticResource BoolToVis}}">
-                <TextBlock
-                    FontSize="15"
-                    FontWeight="SemiBold"
-                    Text="{x:Static res:Strings.Home_RecentlyAdded}" />
-                <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding Recent}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button
-                                Margin="0,0,12,12"
-                                Padding="0"
-                                Command="{Binding DataContext.OpenGameCommand, ElementName=Root}"
-                                CommandParameter="{Binding}"
-                                Cursor="Hand"
-                                ToolTip="{x:Static res:Strings.Home_ViewDetails}">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border
-                                            x:Name="Card"
-                                            Width="170"
-                                            Background="#0DFFFFFF"
-                                            BorderBrush="#14FFFFFF"
-                                            BorderThickness="1"
-                                            CornerRadius="10">
-                                            <StackPanel>
-                                                <Border
-                                                    Height="80"
-                                                    Background="#11FFFFFF"
-                                                    ClipToBounds="True"
-                                                    CornerRadius="10,10,0,0">
-                                                    <Image Source="{Binding Cover}" Stretch="UniformToFill" />
-                                                </Border>
-                                                <TextBlock
-                                                    Margin="10,8,10,10"
-                                                    FontSize="12.5"
-                                                    FontWeight="SemiBold"
-                                                    Text="{Binding Name}"
-                                                    TextTrimming="CharacterEllipsis" />
-                                            </StackPanel>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Card" Property="Background" Value="#18FFFFFF" />
-                                                <Setter TargetName="Card" Property="BorderBrush" Value="#33FFFFFF" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
 
-    <!-- Drag-and-drop overwrite confirm (the DropZone's own flow), page-spanning. -->
-    <views:ConfirmOverlay DataContext="{Binding Drop}" />
+        <!-- Drag-and-drop overwrite confirm dialog (page-spanning overlay) -->
+        <views:ConfirmOverlay DataContext="{Binding Drop}" />
     </Grid>
 </UserControl>

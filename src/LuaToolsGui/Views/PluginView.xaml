@@ -13,74 +13,81 @@
 
     <Grid x:Name="Root">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel MaxWidth="760" Margin="8,16,16,24">
+            <StackPanel MaxWidth="840" Margin="{DynamicResource StandardPageMargin}">
 
                 <!-- Header -->
                 <TextBlock
-                    FontSize="22"
+                    FontSize="24"
                     FontWeight="Bold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{x:Static res:Strings.Plugin_Title}" />
                 <TextBlock
-                    Margin="0,2,0,0"
-                    FontSize="13"
-                    Foreground="#9ca3af"
+                    Margin="0,4,0,0"
+                    FontSize="13.5"
+                    Foreground="{DynamicResource TextSecondaryBrush}"
                     Text="{x:Static res:Strings.Plugin_Subtitle}"
                     TextWrapping="Wrap" />
 
                 <!-- Status card -->
                 <Border
-                    Margin="0,18,0,0"
-                    Padding="18"
-                    Background="#0DFFFFFF"
-                    BorderBrush="#1FFFFFFF"
+                    Margin="0,20,0,0"
+                    Padding="22"
+                    Background="{DynamicResource SurfaceCardBrush}"
+                    BorderBrush="{DynamicResource SurfaceBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="10">
+                    CornerRadius="12">
                     <StackPanel>
 
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon
                                 VerticalAlignment="Center"
-                                Foreground="#38bdf8"
+                                FontSize="20"
+                                Foreground="{DynamicResource AccentPrimaryBrush}"
                                 Symbol="PuzzlePiece24" />
                             <TextBlock
                                 Margin="10,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="15"
+                                FontSize="16"
                                 FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{x:Static res:Strings.Plugin_CardTitle}" />
                             <Border
-                                Margin="10,0,0,0"
-                                Padding="7,2"
+                                Margin="12,0,0,0"
+                                Padding="8,3"
                                 VerticalAlignment="Center"
                                 Background="#207c3aed"
-                                CornerRadius="4"
+                                BorderBrush="#407c3aed"
+                                BorderThickness="1"
+                                CornerRadius="6"
                                 Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
                                 <TextBlock
-                                    FontSize="10.5"
+                                    FontSize="11"
                                     FontWeight="SemiBold"
                                     Foreground="#c4b5fd"
                                     Text="{x:Static res:Strings.Plugin_Status_Installed}" />
                             </Border>
                             <Border
-                                Margin="6,0,0,0"
-                                Padding="7,2"
+                                Margin="8,0,0,0"
+                                Padding="8,3"
                                 VerticalAlignment="Center"
                                 Background="#20f59e0b"
-                                CornerRadius="4"
+                                BorderBrush="#40f59e0b"
+                                BorderThickness="1"
+                                CornerRadius="6"
                                 Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}">
                                 <TextBlock
-                                    FontSize="10.5"
+                                    FontSize="11"
                                     FontWeight="SemiBold"
                                     Foreground="#fbbf24"
                                     Text="{x:Static res:Strings.Plugin_Badge_UpdateAvailable}" />
                             </Border>
                         </StackPanel>
 
-                        <!-- Status rows: each has a leading colored status glyph so state reads at a glance. -->
-                        <Grid Margin="0,16,0,0">
+                        <!-- Status rows -->
+                        <Grid Margin="0,18,0,0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="26" />
-                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="28" />
+                                <ColumnDefinition Width="150" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
@@ -90,64 +97,65 @@
                             </Grid.RowDefinitions>
 
                             <!-- Version -->
-                            <ui:SymbolIcon Grid.Row="0" Grid.Column="0" Margin="0,4" VerticalAlignment="Center" FontSize="16" Foreground="#7c8593" Symbol="Tag24" />
-                            <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,4" VerticalAlignment="Center" FontSize="12.5" Foreground="#7c8593" Text="{x:Static res:Strings.Plugin_Row_InstalledVersion}" />
-                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,4" VerticalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="#e5e7eb" Text="{Binding InstalledVersion}" />
-                                <!-- Update available: arrow to the newer tag, amber. -->
+                            <ui:SymbolIcon Grid.Row="0" Grid.Column="0" Margin="0,6" VerticalAlignment="Center" FontSize="16" Foreground="{DynamicResource TextSecondaryBrush}" Symbol="Tag24" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,6" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Text="{x:Static res:Strings.Plugin_Row_InstalledVersion}" />
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,6" VerticalAlignment="Center" Orientation="Horizontal">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding InstalledVersion}" />
+                                <!-- Update available -->
                                 <StackPanel Orientation="Horizontal" Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}">
-                                    <TextBlock Margin="7,0,7,0" FontSize="12.5" Foreground="#7c8593" Text="→" />
-                                    <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="#fbbf24" Text="{Binding LatestVersion}" />
+                                    <TextBlock Margin="8,0,8,0" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Text="→" />
+                                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#fbbf24" Text="{Binding LatestVersion}" />
                                 </StackPanel>
-                                <!-- Up to date pill, green. -->
-                                <Border Margin="8,0,0,0" Padding="6,1" Background="#2022c55e" CornerRadius="4"
+                                <!-- Up to date pill -->
+                                <Border Margin="10,0,0,0" Padding="8,2" Background="#2022c55e" BorderBrush="#4022c55e" BorderThickness="1" CornerRadius="4"
                                         Visibility="{Binding ShowUpToDate, Converter={StaticResource BoolToVis}}">
-                                    <TextBlock FontSize="10.5" FontWeight="SemiBold" Foreground="#4ade80" Text="{x:Static res:Strings.Plugin_Status_UpToDate}" />
+                                    <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#4ade80" Text="{x:Static res:Strings.Plugin_Status_UpToDate}" />
                                 </Border>
                             </StackPanel>
 
                             <!-- Frontend -->
-                            <Grid Grid.Row="1" Grid.Column="0" Margin="0,4" VerticalAlignment="Center">
+                            <Grid Grid.Row="1" Grid.Column="0" Margin="0,6" VerticalAlignment="Center">
                                 <ui:SymbolIcon FontSize="16" Foreground="#4ade80" Symbol="CheckmarkCircle24" Visibility="{Binding FrontendInstalled, Converter={StaticResource BoolToVis}}" />
-                                <ui:SymbolIcon FontSize="16" Foreground="#7c8593" Symbol="DismissCircle24" Visibility="{Binding FrontendInstalled, Converter={StaticResource InverseBoolToVis}}" />
+                                <ui:SymbolIcon FontSize="16" Foreground="{DynamicResource TextMutedBrush}" Symbol="DismissCircle24" Visibility="{Binding FrontendInstalled, Converter={StaticResource InverseBoolToVis}}" />
                             </Grid>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,4" VerticalAlignment="Center" FontSize="12.5" Foreground="#7c8593" Text="{x:Static res:Strings.Plugin_Row_Frontend}" />
-                            <TextBlock Grid.Row="1" Grid.Column="2" Margin="0,4" VerticalAlignment="Center" FontSize="12.5" Foreground="#e5e7eb" Text="{Binding FrontendStatus}" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,6" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Text="{x:Static res:Strings.Plugin_Row_Frontend}" />
+                            <TextBlock Grid.Row="1" Grid.Column="2" Margin="0,6" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding FrontendStatus}" />
 
                             <!-- Loader (winmm.dll) -->
-                            <Grid Grid.Row="2" Grid.Column="0" Margin="0,4" VerticalAlignment="Center">
+                            <Grid Grid.Row="2" Grid.Column="0" Margin="0,6" VerticalAlignment="Center">
                                 <ui:SymbolIcon FontSize="16" Foreground="#4ade80" Symbol="CheckmarkCircle24" Visibility="{Binding DllOk, Converter={StaticResource BoolToVis}}" />
                                 <ui:SymbolIcon FontSize="16" Foreground="#fbbf24" Symbol="Warning24" Visibility="{Binding DllOutOfDate, Converter={StaticResource BoolToVis}}" />
-                                <ui:SymbolIcon FontSize="16" Foreground="#7c8593" Symbol="DismissCircle24" Visibility="{Binding DllNotInstalled, Converter={StaticResource BoolToVis}}" />
+                                <ui:SymbolIcon FontSize="16" Foreground="{DynamicResource TextMutedBrush}" Symbol="DismissCircle24" Visibility="{Binding DllNotInstalled, Converter={StaticResource BoolToVis}}" />
                             </Grid>
-                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,4" VerticalAlignment="Center" FontSize="12.5" Foreground="#7c8593" Text="{x:Static res:Strings.Plugin_Row_Loader}" />
-                            <TextBlock Grid.Row="2" Grid.Column="2" Margin="0,4" VerticalAlignment="Center" FontSize="12.5" Foreground="#e5e7eb" Text="{Binding DllStatus}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,6" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Text="{x:Static res:Strings.Plugin_Row_Loader}" />
+                            <TextBlock Grid.Row="2" Grid.Column="2" Margin="0,6" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding DllStatus}" />
                         </Grid>
 
                         <!-- Millennium coexisting info -->
                         <Border
-                            Margin="0,14,0,0"
-                            Padding="10,8"
+                            Margin="0,16,0,0"
+                            Padding="12,10"
                             Background="#141a78bf"
-                            CornerRadius="6"
+                            BorderBrush="#331a78bf"
+                            BorderThickness="1"
+                            CornerRadius="8"
                             Visibility="{Binding MillenniumCoexisting, Converter={StaticResource BoolToVis}}">
                             <TextBlock
-                                FontSize="11.5"
+                                FontSize="12.5"
                                 Foreground="#93c5fd"
                                 Text="{x:Static res:Strings.Plugin_Millennium_Coexisting}"
                                 TextWrapping="Wrap" />
                         </Border>
 
                         <!-- Buttons -->
-                        <StackPanel Margin="0,16,0,0" Orientation="Horizontal">
+                        <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
                             <ui:Button
-                                MinWidth="120"
+                                MinWidth="130"
+                                Padding="16,8"
                                 HorizontalContentAlignment="Center"
                                 Command="{Binding InstallCommand}"
                                 Content="{Binding InstallButtonText}"
                                 IsEnabled="{Binding NotBusy}">
-                                <!-- Primary (green) only when there's something to do (Install/Update);
-                                     a healthy "Reinstall" stays secondary. -->
                                 <ui:Button.Style>
                                     <Style BasedOn="{StaticResource {x:Type ui:Button}}" TargetType="ui:Button">
                                         <Setter Property="Appearance" Value="Secondary" />
@@ -161,24 +169,39 @@
                             </ui:Button>
                             <ui:Button
                                 Margin="10,0,0,0"
-                                MinWidth="110"
-                                HorizontalContentAlignment="Center"
-                                Command="{Binding UninstallCommand}"
-                                Content="{x:Static res:Strings.Plugin_Btn_Uninstall}"
-                                IsEnabled="{Binding CanUninstall}"
-                                Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}" />
-                            <ui:Button
-                                Margin="10,0,0,0"
+                                Padding="16,8"
                                 HorizontalContentAlignment="Center"
                                 Command="{Binding CheckForUpdatesCommand}"
                                 Content="{x:Static res:Strings.Plugin_Btn_CheckForUpdates}"
+                                Icon="{ui:SymbolIcon ArrowSync24}"
                                 IsEnabled="{Binding NotBusy}" />
+                            <ui:Button
+                                Margin="10,0,0,0"
+                                MinWidth="110"
+                                Padding="16,8"
+                                HorizontalContentAlignment="Center"
+                                Command="{Binding UninstallCommand}"
+                                Content="{x:Static res:Strings.Plugin_Btn_Uninstall}"
+                                Icon="{ui:SymbolIcon Delete24}"
+                                IsEnabled="{Binding CanUninstall}"
+                                Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
+                                <ui:Button.Style>
+                                    <Style BasedOn="{StaticResource {x:Type ui:Button}}" TargetType="ui:Button">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="#f87171" />
+                                                <Setter Property="BorderBrush" Value="#f87171" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ui:Button.Style>
+                            </ui:Button>
                         </StackPanel>
 
                         <!-- Progress -->
                         <ProgressBar
                             Height="6"
-                            Margin="0,14,0,0"
+                            Margin="0,16,0,0"
                             IsIndeterminate="{Binding IsProgressIndeterminate}"
                             Maximum="100"
                             Value="{Binding Progress}"
@@ -186,8 +209,8 @@
 
                         <!-- Status line (offline/errors) -->
                         <TextBlock
-                            Margin="0,10,0,0"
-                            FontSize="12"
+                            Margin="0,12,0,0"
+                            FontSize="12.5"
                             Foreground="#f59e0b"
                             Text="{Binding StatusLine}"
                             TextWrapping="Wrap"
@@ -196,21 +219,21 @@
                     </StackPanel>
                 </Border>
 
-                <!-- "What this does". Fills the page and explains the plugin at a glance. -->
+                <!-- "What this does" section -->
                 <TextBlock
                     Margin="2,26,0,0"
-                    FontSize="11"
+                    FontSize="12"
                     FontWeight="SemiBold"
-                    Foreground="#6b7280"
+                    Foreground="{DynamicResource TextSecondaryBrush}"
                     Text="{x:Static res:Strings.Plugin_About_Header}" />
 
-                <StackPanel Margin="0,10,0,0">
+                <StackPanel Margin="0,12,0,0">
                     <StackPanel.Resources>
                         <Style x:Key="FeatureRow" TargetType="Border">
                             <Setter Property="Margin" Value="0,0,0,8" />
-                            <Setter Property="Padding" Value="14,12" />
-                            <Setter Property="Background" Value="#0DFFFFFF" />
-                            <Setter Property="BorderBrush" Value="#1FFFFFFF" />
+                            <Setter Property="Padding" Value="16,14" />
+                            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}" />
                             <Setter Property="BorderThickness" Value="1" />
                             <Setter Property="CornerRadius" Value="10" />
                         </Style>
@@ -218,38 +241,61 @@
 
                     <Border Style="{StaticResource FeatureRow}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="34" Height="34" VerticalAlignment="Center" Background="#1aa78bfa" CornerRadius="8">
+                            <Border Width="36" Height="36" VerticalAlignment="Center" Background="#1aa78bfa" CornerRadius="8">
                                 <ui:SymbolIcon FontSize="18" Foreground="#a78bfa" Symbol="AddCircle24" />
                             </Border>
-                            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontSize="12.5" Foreground="#c9ced6" Text="{x:Static res:Strings.Plugin_Feature_StoreButton}" TextWrapping="Wrap" />
+                            <TextBlock Margin="14,0,0,0" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{x:Static res:Strings.Plugin_Feature_StoreButton}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource FeatureRow}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="34" Height="34" VerticalAlignment="Center" Background="#1aa78bfa" CornerRadius="8">
+                            <Border Width="36" Height="36" VerticalAlignment="Center" Background="#1aa78bfa" CornerRadius="8">
                                 <ui:SymbolIcon FontSize="18" Foreground="#a78bfa" Symbol="ArrowSync24" />
                             </Border>
-                            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontSize="12.5" Foreground="#c9ced6" Text="{x:Static res:Strings.Plugin_Feature_AutoUpdate}" TextWrapping="Wrap" />
+                            <TextBlock Margin="14,0,0,0" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{x:Static res:Strings.Plugin_Feature_AutoUpdate}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource FeatureRow}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="34" Height="34" VerticalAlignment="Center" Background="#1aa78bfa" CornerRadius="8">
+                            <Border Width="36" Height="36" VerticalAlignment="Center" Background="#1aa78bfa" CornerRadius="8">
                                 <ui:SymbolIcon FontSize="18" Foreground="#a78bfa" Symbol="PuzzlePiece24" />
                             </Border>
-                            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontSize="12.5" Foreground="#c9ced6" Text="{x:Static res:Strings.Plugin_Feature_Millennium}" TextWrapping="Wrap" />
+                            <TextBlock Margin="14,0,0,0" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{x:Static res:Strings.Plugin_Feature_Millennium}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
-                <TextBlock
-                    Margin="2,10,0,0"
-                    FontSize="11.5"
-                    Foreground="#6b7280"
-                    Text="{x:Static res:Strings.Plugin_Footer}"
-                    TextWrapping="Wrap" />
+                <!-- Information Box -->
+                <Border
+                    Margin="0,16,0,0"
+                    Padding="16,14"
+                    Background="#1038bdf8"
+                    BorderBrush="#2538bdf8"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ui:SymbolIcon
+                            Grid.Column="0"
+                            VerticalAlignment="Top"
+                            FontSize="18"
+                            Foreground="{DynamicResource AccentPrimaryBrush}"
+                            Symbol="Info24" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="12,0,0,0"
+                            FontSize="12.5"
+                            Foreground="{DynamicResource TextSecondaryBrush}"
+                            LineHeight="18"
+                            Text="{x:Static res:Strings.Plugin_Footer}"
+                            TextWrapping="Wrap" />
+                    </Grid>
+                </Border>
 
             </StackPanel>
         </ScrollViewer>

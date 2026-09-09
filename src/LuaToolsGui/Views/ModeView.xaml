@@ -11,14 +11,14 @@
     TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <Grid x:Name="Root">
+    <Grid x:Name="Root" Margin="{DynamicResource StandardPageMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <!-- Fixed bottom dock (separator + CloudRedirect add-on + progress) -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-            <StackPanel MaxWidth="760" Margin="8,16,16,8">
+            <StackPanel MaxWidth="820" Margin="0,0,0,8">
 
                 <!-- Header -->
                 <Grid>
@@ -26,20 +26,23 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
+                    <StackPanel VerticalAlignment="Center">
                         <TextBlock
                             FontSize="22"
                             FontWeight="Bold"
+                            Foreground="{DynamicResource TextMainBrush}"
                             Text="{x:Static res:Strings.Mode_Title}" />
                         <TextBlock
-                            Margin="0,2,0,0"
-                            FontSize="13"
-                            Foreground="#9ca3af"
-                            Text="{x:Static res:Strings.Mode_Subtitle}" />
+                            Margin="0,4,0,0"
+                            FontSize="12.5"
+                            Foreground="{DynamicResource TextSecondaryBrush}"
+                            Text="{x:Static res:Strings.Mode_Subtitle}"
+                            TextWrapping="Wrap" />
                     </StackPanel>
                     <ui:Button
                         Grid.Column="1"
-                        VerticalAlignment="Top"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
                         Command="{Binding CheckForUpdatesCommand}"
                         Content="{x:Static res:Strings.Mode_CheckForUpdates}"
                         Icon="{ui:SymbolIcon ArrowSync24}"
@@ -53,47 +56,60 @@
                             <Border
                                 Margin="0,0,0,12"
                                 Padding="18"
-                                Background="#0DFFFFFF"
-                                BorderBrush="#1FFFFFFF"
+                                Background="{DynamicResource SurfacePrimaryBrush}"
+                                BorderBrush="{DynamicResource BorderSubtleBrush}"
                                 BorderThickness="1"
-                                CornerRadius="10">
+                                CornerRadius="{DynamicResource RadiusCard}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                                                <Setter Property="BorderThickness" Value="1.5" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <StackPanel Orientation="Horizontal">
+                                        <WrapPanel Orientation="Horizontal">
                                             <ui:SymbolIcon
                                                 VerticalAlignment="Center"
-                                                Foreground="#a78bfa"
+                                                Foreground="{DynamicResource AccentPrimaryBrush}"
                                                 Symbol="Wrench24" />
                                             <TextBlock
                                                 Margin="10,0,0,0"
                                                 VerticalAlignment="Center"
                                                 FontSize="15"
                                                 FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextMainBrush}"
                                                 Text="{Binding Title}" />
                                             <!-- Active: green badge with checkmark. -->
                                             <Border
                                                 Margin="10,0,0,0"
                                                 Padding="7,2"
                                                 VerticalAlignment="Center"
-                                                Background="#2022c55e"
+                                                Background="{DynamicResource SuccessBgBrush}"
+                                                BorderBrush="{DynamicResource SuccessBrush}"
+                                                BorderThickness="1"
                                                 CornerRadius="4"
                                                 Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon
                                                         VerticalAlignment="Center"
                                                         FontSize="11"
-                                                        Foreground="#4ade80"
+                                                        Foreground="{DynamicResource SuccessBrush}"
                                                         Symbol="Checkmark24" />
                                                     <TextBlock
                                                         Margin="4,0,0,0"
                                                         VerticalAlignment="Center"
                                                         FontSize="10.5"
                                                         FontWeight="SemiBold"
-                                                        Foreground="#4ade80"
+                                                        Foreground="{DynamicResource SuccessBrush}"
                                                         Text="{x:Static res:Strings.Mode_Active}" />
                                                 </StackPanel>
                                             </Border>
@@ -102,21 +118,23 @@
                                                 Margin="6,0,0,0"
                                                 Padding="7,2"
                                                 VerticalAlignment="Center"
-                                                Background="#202563eb"
+                                                Background="#224AA8FF"
+                                                BorderBrush="#4AA8FF"
+                                                BorderThickness="1"
                                                 CornerRadius="4"
                                                 Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVis}}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon
                                                         VerticalAlignment="Center"
                                                         FontSize="10"
-                                                        Foreground="#60a5fa"
+                                                        Foreground="#4AA8FF"
                                                         Symbol="Star24" />
                                                     <TextBlock
                                                         Margin="4,0,0,0"
                                                         VerticalAlignment="Center"
                                                         FontSize="10.5"
                                                         FontWeight="SemiBold"
-                                                        Foreground="#60a5fa"
+                                                        Foreground="#4AA8FF"
                                                         Text="{x:Static res:Strings.Mode_Recommended}" />
                                                 </StackPanel>
                                             </Border>
@@ -125,21 +143,23 @@
                                                 Margin="6,0,0,0"
                                                 Padding="7,2"
                                                 VerticalAlignment="Center"
-                                                Background="#20f59e0b"
+                                                Background="{DynamicResource WarningBgBrush}"
+                                                BorderBrush="{DynamicResource WarningBrush}"
+                                                BorderThickness="1"
                                                 CornerRadius="4"
                                                 Visibility="{Binding IsExperimental, Converter={StaticResource BoolToVis}}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon
                                                         VerticalAlignment="Center"
                                                         FontSize="10"
-                                                        Foreground="#fbbf24"
+                                                        Foreground="{DynamicResource WarningBrush}"
                                                         Symbol="Warning24" />
                                                     <TextBlock
                                                         Margin="4,0,0,0"
                                                         VerticalAlignment="Center"
                                                         FontSize="10.5"
                                                         FontWeight="SemiBold"
-                                                        Foreground="#fbbf24"
+                                                        Foreground="{DynamicResource WarningBrush}"
                                                         Text="{x:Static res:Strings.Mode_Experimental}" />
                                                 </StackPanel>
                                             </Border>
@@ -148,43 +168,47 @@
                                                 Margin="6,0,0,0"
                                                 Padding="7,2"
                                                 VerticalAlignment="Center"
-                                                Background="#207c3aed"
+                                                Background="{DynamicResource AccentBgBrush}"
+                                                BorderBrush="{DynamicResource BorderHighlightBrush}"
+                                                BorderThickness="1"
                                                 CornerRadius="4"
                                                 Visibility="{Binding SupportsCloudRedirect, Converter={StaticResource BoolToVis}}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon
                                                         VerticalAlignment="Center"
                                                         FontSize="10"
-                                                        Foreground="#c4b5fd"
+                                                        Foreground="{DynamicResource AccentPrimaryBrush}"
                                                         Symbol="Cloud24" />
                                                     <TextBlock
                                                         Margin="4,0,0,0"
                                                         VerticalAlignment="Center"
                                                         FontSize="10.5"
                                                         FontWeight="SemiBold"
-                                                        Foreground="#c4b5fd"
+                                                        Foreground="{DynamicResource AccentPrimaryBrush}"
                                                         Text="{x:Static res:Strings.Mode_CloudRedirectSupport}" />
                                                 </StackPanel>
                                             </Border>
-                                        </StackPanel>
+                                        </WrapPanel>
                                         <TextBlock
-                                            Margin="0,6,0,0"
-                                            FontSize="12"
-                                            Foreground="#7c8593"
+                                            Margin="0,8,0,0"
+                                            FontSize="12.5"
+                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                             Text="{Binding Description}"
                                             TextWrapping="Wrap" />
                                         <TextBlock
                                             Margin="0,6,0,0"
-                                            FontSize="12.5"
-                                            Foreground="#9ca3af"
+                                            FontSize="12"
+                                            Foreground="{DynamicResource TextMutedBrush}"
                                             Text="{Binding StatusText}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>
                                     <StackPanel
                                         Grid.Column="1"
+                                        Margin="16,0,0,0"
                                         VerticalAlignment="Center">
                                         <!-- Hidden on the active Custom card: nothing to install or update there. -->
                                         <ui:Button
+                                            MinWidth="110"
                                             HorizontalAlignment="Stretch"
                                             HorizontalContentAlignment="Center"
                                             Command="{Binding DataContext.InstallCommand, ElementName=Root}"
@@ -203,20 +227,20 @@
         </ScrollViewer>
 
         <!-- Fixed bottom dock: separator + CloudRedirect add-on + shared progress. -->
-        <StackPanel Grid.Row="1" MaxWidth="760" Margin="8,0,16,16">
+        <StackPanel Grid.Row="1" MaxWidth="820" Margin="0,0,0,16">
 
                 <!-- Divider between the scrolling mode cards and the docked add-on. -->
-                <Border Height="1" Margin="0,0,0,14" Background="#1FFFFFFF" />
+                <Border Height="1" Margin="0,0,0,14" Background="{DynamicResource BorderSubtleBrush}" />
 
                 <!-- CloudRedirect add-on: a feature of the Nightly BST build. Locked (dimmed, buttons
                       disabled) unless BetterSteamTools Nightly is the active mode. -->
                 <Border
                     Margin="0,0,0,0"
                     Padding="18"
-                    Background="#0DFFFFFF"
-                    BorderBrush="#1FFFFFFF"
+                    Background="{DynamicResource SurfacePrimaryBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
                     BorderThickness="1"
-                    CornerRadius="10">
+                    CornerRadius="{DynamicResource RadiusCard}">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Style.Triggers>
@@ -235,31 +259,32 @@
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon
                                     VerticalAlignment="Center"
-                                    Foreground="#38bdf8"
+                                    Foreground="{DynamicResource AccentSecondaryBrush}"
                                     Symbol="Cloud24" />
                                 <TextBlock
                                     Margin="10,0,0,0"
                                     VerticalAlignment="Center"
                                     FontSize="15"
                                     FontWeight="SemiBold"
-                                    Text="CloudRedirect" />
+                                    Foreground="{DynamicResource TextMainBrush}"
+                                    Text="Bulut Yönlendirme (CloudRedirect)" />
                             </StackPanel>
                             <TextBlock
-                                Margin="0,6,0,0"
-                                FontSize="12"
-                                Foreground="#7c8593"
+                                Margin="0,8,0,0"
+                                FontSize="12.5"
+                                Foreground="{DynamicResource TextSecondaryBrush}"
                                 Text="{x:Static res:Strings.Mode_CloudRedirect_AddonDesc}"
                                 TextWrapping="Wrap" />
                             <TextBlock
                                 Margin="0,6,0,0"
-                                FontSize="12.5"
-                                Foreground="#9ca3af"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextMutedBrush}"
                                 Text="{Binding CloudRedirectStatusText}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
                             <ui:Button
-                                MinWidth="96"
+                                MinWidth="110"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
                                 Command="{Binding ToggleCloudRedirectCommand}"

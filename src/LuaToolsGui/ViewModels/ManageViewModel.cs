@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -15,13 +15,19 @@ public partial class LuaTileViewModel : ObservableObject
     public long AppId { get; }
     public string FilePath { get; }
     public DateTime AddedAt { get; }
-    // Invariant culture so the month is always the 3-letter abbreviation ("Jun", not "June" or a
-    // localized long form), 2-digit year ("'26"). Keeps the combined "Added … • Released …" line
-    // short enough to fit the card.
-    public string AddedLabel =>
-        "Added " + AddedAt.ToString(@"MMM d, \'yy", System.Globalization.CultureInfo.InvariantCulture);
+    public string AddedLabel
+    {
+        get
+        {
+            var culture = System.Globalization.CultureInfo.CurrentUICulture;
+            bool isTr = culture.TwoLetterISOLanguageName.Equals("tr", StringComparison.OrdinalIgnoreCase);
+            string prefix = isTr ? "Eklendi: " : "Added ";
+            string dateStr = AddedAt.ToString(@"d MMM \'yy", culture);
+            return prefix + dateStr;
+        }
+    }
 
-    /// <summary>Steam release date for the card (e.g. "Released Feb 24, 2022"), or "" until details
+    /// <summary>Steam release date for the card (e.g. "Released Feb 24, 2022" / "Çıkış: 24 Şub '22"), or "" until details
     /// are cached. Set by <see cref="UpdateReleaseLabel"/> once the appdetails blob is available.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AddedReleaseLabel))]
@@ -57,7 +63,10 @@ public partial class LuaTileViewModel : ObservableObject
         // Shorten a 4-digit year to 2 digits ("May 26, 2025" → "May 26, '25") to keep the combined
         // line on one row. Leaves non-date wording ("Coming soon") untouched.
         text = System.Text.RegularExpressions.Regex.Replace(text, @"\b(19|20)(\d{2})\b", "'$2");
-        ReleaseLabel = $"Released {text}";
+        var culture = System.Globalization.CultureInfo.CurrentUICulture;
+        bool isTr = culture.TwoLetterISOLanguageName.Equals("tr", StringComparison.OrdinalIgnoreCase);
+        string prefix = isTr ? "Çıkış: " : "Released ";
+        ReleaseLabel = $"{prefix}{text}";
     }
 
     /// <summary>Raised when IsSelected changes so the page can update its selection count/bar.</summary>

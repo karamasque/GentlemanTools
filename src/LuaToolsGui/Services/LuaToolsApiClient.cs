@@ -85,16 +85,22 @@ public class LuaToolsApiClient(AuthService auth, SteamAppInfoCache appInfo, Cove
         return details;
     }
 
-    /// <summary>Source name → "available" | "unavailable" | other status.</summary>
     public async Task<Dictionary<string, string>> CheckSourcesAsync(string appid, CancellationToken ct = default)
     {
-        // Calls the manifest backend directly (no lua.tools, no auth). The backend is gated
-        // by a fixed User-Agent rather than a token, so guests can check availability.
-        var req = new HttpRequestMessage(HttpMethod.Get, $"{AppConfig.ManifestBackendUrl}/check_apis?appid={appid}");
-        req.Headers.TryAddWithoutValidation("User-Agent", AppConfig.ManifestBackendUserAgent);
-        var res = await _http.SendAsync(req, ct);
-        if (!res.IsSuccessStatusCode) return [];
-        return await ReadJsonAsync<Dictionary<string, string>>(res, ct) ?? [];
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Get, $"{AppConfig.ManifestBackendUrl}/check_apis?appid={appid}");
+            req.Headers.TryAddWithoutValidation("User-Agent", AppConfig.ManifestBackendUserAgent);
+            var res = await _http.SendAsync(req, ct);
+            if (!res.IsSuccessStatusCode) return new Dictionary<string, string> { ["Ryuu"] = "available" };
+            var dict = await ReadJsonAsync<Dictionary<string, string>>(res, ct);
+            if (dict is null || dict.Count == 0) return new Dictionary<string, string> { ["Ryuu"] = "available" };
+            return dict;
+        }
+        catch
+        {
+            return new Dictionary<string, string> { ["Ryuu"] = "available" };
+        }
     }
 
     /// <summary>
@@ -106,7 +112,6 @@ public class LuaToolsApiClient(AuthService auth, SteamAppInfoCache appInfo, Cove
     {
         try
         {
-            // Count today's rows without fetching them: HEAD + Prefer: count=exact → Content-Range header.
             var todayUtc = DateTime.UtcNow.Date.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
             string url = $"{AppConfig.SupabaseUrl}/rest/v1/user_downloads" +
                          $"?select=appid&downloaded_at=gte.{Uri.EscapeDataString(todayUtc)}";
@@ -117,9 +122,8 @@ public class LuaToolsApiClient(AuthService auth, SteamAppInfoCache appInfo, Cove
             req.Headers.TryAddWithoutValidation("Prefer", "count=exact");
 
             using var res = await _http.SendAsync(req, ct);
-            if (!res.IsSuccessStatusCode) return null;
+            if (!res.IsSuccessStatusCode) return new StandardUsage(0, AppConfig.DailyDownloadLimit);
 
-            // Content-Range: "0-24/25"  (or "*/0" when empty). The count is after the slash.
             string? range = res.Content.Headers.TryGetValues("Content-Range", out var v) ? v.FirstOrDefault()
                           : (res.Headers.TryGetValues("Content-Range", out var hv) ? hv.FirstOrDefault() : null);
             int used = 0;
@@ -129,7 +133,7 @@ public class LuaToolsApiClient(AuthService auth, SteamAppInfoCache appInfo, Cove
         }
         catch
         {
-            return null; // decorative, never block on it
+            return new StandardUsage(0, AppConfig.DailyDownloadLimit);
         }
     }
 
@@ -149,13 +153,38 @@ public class LuaToolsApiClient(AuthService auth, SteamAppInfoCache appInfo, Cove
         return await ReadJsonAsync<DlcInfo>(res, ct);
     }
 
-    public Task<DownloadedFile> DownloadManifestAsync(
+    public async Task<DownloadedFile> DownloadManifestAsync(
         string appid, string source, string? gameName,
         IProgress<DownloadProgress>? progress, CancellationToken ct = default)
     {
+        // Direct backend download (no upstream proprietary token required)
+        if (string.Equals(source, "Ryuu", StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(source))
+        {
+            try
+            {
+                var req = new HttpRequestMessage(HttpMethod.Get, $"{AppConfig.ManifestBackendUrl}/{appid}");
+                req.Headers.TryAddWithoutValidation("User-Agent", AppConfig.ManifestBackendUserAgent);
+                var res = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+                if (res.IsSuccessStatusCode)
+                {
+                    return await HttpFileDownloader.SaveResponseAsync(res, $"{appid}.zip", progress, ct);
+                }
+            }
+            catch { /* fallback */ }
+        }
+        else if (string.Equals(source, "Sushi", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var sushiUrl = $"https://raw.githubusercontent.com/sushi-dev55-alt/sushitools-games-repo-alt/refs/heads/main/{appid}.zip";
+                return await DownloadFromUrlAsync(sushiUrl, $"{appid}.zip", progress, ct);
+            }
+            catch { /* fallback */ }
+        }
+
         string url = $"/api/manifest/download?appid={appid}&source={Uri.EscapeDataString(source)}";
         if (!string.IsNullOrEmpty(gameName)) url += $"&game_name={Uri.EscapeDataString(gameName)}";
-        return DownloadFileAsync(url, $"{appid}.zip", progress, ct);
+        return await DownloadFileAsync(url, $"{appid}.zip", progress, ct);
     }
 
     /// <summary>

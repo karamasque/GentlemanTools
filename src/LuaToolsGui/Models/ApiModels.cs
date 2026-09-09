@@ -174,12 +174,12 @@ public static class SourceMeta
 
     public static readonly Dictionary<string, Meta> All = new()
     {
-        ["Ryuu"] = new(DiscordUrl: "https://discord.gg/manifests"),
-        ["TwentyTwo Cloud"] = new(DiscordUrl: "https://discord.gg/RrukXPyv5b"),
-        ["Sushi"] = new(DiscordUrl: "https://discord.gg/hMdv5dQhcN"),
-        ["Skyflare"] = new(DiscordUrl: "https://discord.gg/luatools"),
-        ["Sadie (Morrenus)"] = new(DisplayName: "Sadie (Hubcap)", DiscordUrl: "https://discord.gg/hubcapsmanifest", RequiresUserKey: true),
+        ["Ryuu"] = new(DiscordUrl: "https://discord.gg/Sc6rxh39Zn"),
+        ["TwentyTwo Cloud"] = new(DiscordUrl: "https://discord.gg/Sc6rxh39Zn"),
+        ["Sushi"] = new(DiscordUrl: "https://discord.gg/Sc6rxh39Zn"),
+        ["Skyflare"] = new(DiscordUrl: "https://discord.gg/Sc6rxh39Zn"),
+        ["Sadie (Morrenus)"] = new(DisplayName: "Sadie (Hubcap)", DiscordUrl: "https://discord.gg/Sc6rxh39Zn", RequiresUserKey: true),
     };
 
-    public static Meta Get(string name) => All.TryGetValue(name, out var m) ? m : new Meta();
+    public static Meta Get(string name) => All.TryGetValue(name, out var m) ? m : new Meta(DiscordUrl: "https://discord.gg/Sc6rxh39Zn");
 }

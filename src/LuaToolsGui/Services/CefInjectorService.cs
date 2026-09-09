@@ -67,8 +67,9 @@ public class CefInjectorService : IHostedService
         var jsPath = FindLuaToolsJs();
         if (jsPath is not null && File.Exists(jsPath))
         {
-            _luatoolsJs = await File.ReadAllTextAsync(jsPath, ct);
-            _log.LogInformation("Loaded luatools.js ({Length} bytes)", _luatoolsJs.Length);
+            var raw = await File.ReadAllTextAsync(jsPath, ct);
+            _luatoolsJs = ApplyGentlemanStationBranding(raw);
+            _log.LogInformation("Loaded and rebranded luatools.js ({Length} bytes)", _luatoolsJs.Length);
         }
         else
         {
@@ -216,20 +217,28 @@ public class CefInjectorService : IHostedService
 
     private async Task<string> CallBackendMethod(string method, string argsRaw)
     {
-        var methodMap = new Dictionary<string, (string HttpMethod, string Path)>
+        var methodMap = new Dictionary<string, (string HttpMethod, string Path)>(StringComparer.OrdinalIgnoreCase)
         {
             ["HasLuaToolsForApp"] = ("GET", "/has/{appid}"),
+            ["HasGentlemanStationForApp"] = ("GET", "/has/{appid}"),
             ["CheckApisForApp"] = ("POST", "/check-sources/{appid}"),
             ["StartAddViaLuaToolsFromUrl"] = ("POST", "/download/{appid}"),
+            ["StartAddViaGentlemanStationFromUrl"] = ("POST", "/download/{appid}"),
             ["GetAddViaLuaToolsStatus"] = ("GET", "/download-status/{appid}"),
+            ["GetAddViaGentlemanStationStatus"] = ("GET", "/download-status/{appid}"),
             ["CancelAddViaLuaTools"] = ("POST", "/cancel/{appid}"),
+            ["CancelAddViaGentlemanStation"] = ("POST", "/cancel/{appid}"),
             ["DeleteLuaToolsForApp"] = ("POST", "/remove/{appid}"),
+            ["DeleteGentlemanStationForApp"] = ("POST", "/remove/{appid}"),
             // Store-page popup's self-contained add pipeline (PluginAddService-backed).
             // Raw fetch() to these from the page context is blocked as mixed content
             // (HTTPS store page -> HTTP localhost); route through this CDP bridge instead.
             ["StartLuaToolsAdd"] = ("POST", "/add/{appid}"),
+            ["StartGentlemanStationAdd"] = ("POST", "/add/{appid}"),
             ["GetLuaToolsAddStatus"] = ("GET", "/add-status/{appid}"),
+            ["GetGentlemanStationAddStatus"] = ("GET", "/add-status/{appid}"),
             ["PickLuaToolsAddSource"] = ("POST", "/add-source/{appid}"),
+            ["PickGentlemanStationAddSource"] = ("POST", "/add-source/{appid}"),
             // Menu actions (Settings, Fixes, Restart Steam). Same mixed-content problem, same fix.
             ["OpenSettings"] = ("POST", "/open/settings"),
             ["OpenFix"] = ("POST", "/open/fix/{appid}"),
@@ -427,7 +436,7 @@ function ltCall(p,m,a){
 }
 if(real&&typeof real.callServerMethod==='function'){
   var realCall=real.callServerMethod.bind(real);
-  real.callServerMethod=function(p,m,a){return p==='luatools'?ltCall(p,m,a):realCall(p,m,a)};
+  real.callServerMethod=function(p,m,a){return (p==='luatools'||p==='gentlemanstation')?ltCall(p,m,a):realCall(p,m,a)};
   real._pending=pending;
   real._readyResponses=ready;
   window.Millennium=real;
@@ -436,6 +445,78 @@ if(real&&typeof real.callServerMethod==='function'){
 }
 })();
 ";
+    }
+
+    private static string ApplyGentlemanStationBranding(string js)
+    {
+        if (string.IsNullOrEmpty(js)) return js;
+
+        try
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string[] candidates =
+            {
+                Path.Combine(AppContext.BaseDirectory, "gentleman-icon.png"),
+                Path.Combine(AppContext.BaseDirectory, "luatools-icon.png"),
+                Path.Combine(appData, "LuaToolsGui", "plugin", "public", "luatools-icon.png"),
+            };
+
+            string? iconFound = null;
+            foreach (var c in candidates)
+            {
+                if (File.Exists(c)) { iconFound = c; break; }
+            }
+
+            if (iconFound is not null)
+            {
+                var iconBytes = File.ReadAllBytes(iconFound);
+                var b64 = Convert.ToBase64String(iconBytes);
+                var dataUrl = $"data:image/png;base64,{b64}";
+                
+                // Replace any embedded base64 data URLs
+                js = System.Text.RegularExpressions.Regex.Replace(js, @"data:image/png;base64,[A-Za-z0-9+/=]+", dataUrl);
+                
+                // Replace any static relative icon URLs with the direct inline dataUrl
+                js = js.Replace("\"LuaTools/luatools-icon.png\"", $"\"{dataUrl}\"")
+                       .Replace("'LuaTools/luatools-icon.png'", $"'{dataUrl}'")
+                       .Replace("\"luatools-icon.png\"", $"\"{dataUrl}\"")
+                       .Replace("'luatools-icon.png'", $"'{dataUrl}'");
+            }
+        }
+        catch { }
+
+        return js
+            .Replace("LuaTools \u2022", "GentlemanStation \u2022")
+            .Replace("LuaTools \u00b7", "GentlemanStation \u00b7")
+            .Replace("LuaTools •", "GentlemanStation •")
+            .Replace("LuaTools ·", "GentlemanStation ·")
+            .Replace("LuaTools -", "GentlemanStation -")
+            .Replace("LuaTools:", "GentlemanStation:")
+            .Replace("LuaTools ", "GentlemanStation ")
+            .Replace("LuaTools · Menü", "GentlemanStation · Menü")
+            .Replace("LuaTools - Menü", "GentlemanStation - Menü")
+            .Replace("LuaTools · Menu", "GentlemanStation · Menu")
+            .Replace("LuaTools - Menu", "GentlemanStation - Menu")
+            .Replace("LuaTools · Fixes Menu", "GentlemanStation · Fixes Menu")
+            .Replace("LuaTools · AIO Fixes Menu", "GentlemanStation · AIO Fixes Menu")
+            .Replace("LuaTools · Added Games", "GentlemanStation · Added Games")
+            .Replace("LuaTools ile Ekle", "GentlemanStation ile Ekle")
+            .Replace("Add via LuaTools", "Add via GentlemanStation")
+            .Replace("Add to LuaTools", "Add to GentlemanStation")
+            .Replace("Remove via LuaTools", "Remove via GentlemanStation")
+            .Replace("LuaTools'tan Kaldır", "GentlemanStation'dan Kaldır")
+            .Replace("\"LuaTools\"", "\"GentlemanStation\"")
+            .Replace("\\\"LuaTools\\\"", "\\\"GentlemanStation\\\"")
+            .Replace("'LuaTools'", "'GentlemanStation'")
+            .Replace("LuaTools Fixes", "GentlemanStation Fixes")
+            .Replace("https://discord.gg/luatools", "https://discord.gg/Sc6rxh39Zn")
+            .Replace("https://discord.gg/manifests", "https://discord.gg/Sc6rxh39Zn")
+            .Replace("https://discord.gg/RrukXPyv5b", "https://discord.gg/Sc6rxh39Zn")
+            .Replace("https://discord.gg/hMdv5dQhcN", "https://discord.gg/Sc6rxh39Zn")
+            .Replace("https://discord.gg/hubcapsmanifest", "https://discord.gg/Sc6rxh39Zn")
+            .Replace("Lua.Tools", "GentlemanStation")
+            .Replace("Lua Tools", "GentlemanStation")
+            .Replace("LuaTools", "GentlemanStation");
     }
 }
 

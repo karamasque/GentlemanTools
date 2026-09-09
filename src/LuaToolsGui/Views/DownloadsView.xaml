@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="LuaToolsGui.Views.DownloadsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -285,21 +285,22 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid Margin="24">
+    <Grid Margin="{DynamicResource StandardPageMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!--  Header: title + tools  -->
-        <Grid>
+        <Grid Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
-                FontSize="22"
+                FontSize="24"
                 FontWeight="Bold"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                 Text="{x:Static res:Strings.Downloads_Title}" />
             <!--  Fetches SteamAutoCrack (and the .NET runtime it needs) and opens its window. Their GUI
                   takes no arguments, so nothing is passed to it — the user drives it from there.  -->

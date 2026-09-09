@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -605,19 +605,59 @@ public class PluginInstallerService(SteamService steam, GithubProxy gh, CefInjec
     /// up so <c>public/luatools.js</c> sits directly under FrontendDir.</summary>
     private static void NormalizeFrontendLayout()
     {
-        if (Directory.Exists(Path.Combine(FrontendDir, "public"))) return;
-        foreach (var sub in Directory.GetDirectories(FrontendDir))
+        if (!Directory.Exists(Path.Combine(FrontendDir, "public")))
         {
-            if (!Directory.Exists(Path.Combine(sub, "public"))) continue;
-            foreach (var entry in Directory.GetFileSystemEntries(sub))
+            foreach (var sub in Directory.GetDirectories(FrontendDir))
             {
-                string dest = Path.Combine(FrontendDir, Path.GetFileName(entry));
-                if (Directory.Exists(entry)) Directory.Move(entry, dest);
-                else File.Move(entry, dest, overwrite: true);
+                if (!Directory.Exists(Path.Combine(sub, "public"))) continue;
+                foreach (var entry in Directory.GetFileSystemEntries(sub))
+                {
+                    string dest = Path.Combine(FrontendDir, Path.GetFileName(entry));
+                    if (Directory.Exists(entry)) Directory.Move(entry, dest);
+                    else File.Move(entry, dest, overwrite: true);
+                }
+                try { Directory.Delete(sub, recursive: true); } catch { /* leftover wrapper */ }
+                break;
             }
-            try { Directory.Delete(sub, recursive: true); } catch { /* leftover wrapper */ }
-            return;
         }
+
+        try
+        {
+            var srcIcon = Path.Combine(AppContext.BaseDirectory, "gentleman-icon.png");
+            if (!File.Exists(srcIcon)) srcIcon = Path.Combine(AppContext.BaseDirectory, "luatools-icon.png");
+            if (File.Exists(srcIcon))
+            {
+                var pub = Path.Combine(FrontendDir, "public");
+                if (Directory.Exists(pub))
+                    File.Copy(srcIcon, Path.Combine(pub, "luatools-icon.png"), overwrite: true);
+                File.Copy(srcIcon, Path.Combine(FrontendDir, "luatools-icon.png"), overwrite: true);
+            }
+
+            if (File.Exists(LuatoolsJsPath))
+            {
+                var content = File.ReadAllText(LuatoolsJsPath);
+                var rebranded = content
+                    .Replace("LuaTools \u2022", "GentlemanStation \u2022")
+                    .Replace("LuaTools \u00b7", "GentlemanStation \u00b7")
+                    .Replace("LuaTools •", "GentlemanStation •")
+                    .Replace("LuaTools ·", "GentlemanStation ·")
+                    .Replace("LuaTools -", "GentlemanStation -")
+                    .Replace("LuaTools:", "GentlemanStation:")
+                    .Replace("LuaTools ", "GentlemanStation ")
+                    .Replace("\"LuaTools\"", "\"GentlemanStation\"")
+                    .Replace("'LuaTools'", "'GentlemanStation'")
+                    .Replace("https://discord.gg/luatools", "https://discord.gg/Sc6rxh39Zn")
+                    .Replace("https://discord.gg/manifests", "https://discord.gg/Sc6rxh39Zn")
+                    .Replace("https://discord.gg/RrukXPyv5b", "https://discord.gg/Sc6rxh39Zn")
+                    .Replace("https://discord.gg/hMdv5dQhcN", "https://discord.gg/Sc6rxh39Zn")
+                    .Replace("https://discord.gg/hubcapsmanifest", "https://discord.gg/Sc6rxh39Zn")
+                    .Replace("Lua.Tools", "GentlemanStation")
+                    .Replace("Lua Tools", "GentlemanStation")
+                    .Replace("LuaTools", "GentlemanStation");
+                File.WriteAllText(LuatoolsJsPath, rebranded);
+            }
+        }
+        catch { }
     }
 
     // ── Helpers (same shape as UnlockerService's) ──

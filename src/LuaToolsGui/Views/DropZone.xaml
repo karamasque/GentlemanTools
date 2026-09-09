@@ -16,79 +16,136 @@
     mc:Ignorable="d">
 
     <Grid>
-        <!-- The drop box -->
+        <!-- The drop box container -->
         <Border
-            MinHeight="92"
-            Padding="16,14"
-            CornerRadius="10"
+            MinHeight="120"
+            Padding="24,20"
+            Background="{DynamicResource SurfacePrimaryBrush}"
+            BorderBrush="{DynamicResource BorderSubtleBrush}"
+            BorderThickness="1.5"
+            CornerRadius="{DynamicResource RadiusCard}"
             SnapsToDevicePixels="True">
             <Border.Style>
                 <Style TargetType="Border">
-                    <Setter Property="Background" Value="#0AFFFFFF" />
-                    <Setter Property="BorderBrush" Value="#28FFFFFF" />
-                    <Setter Property="BorderThickness" Value="1.4" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsDragOver}" Value="True">
-                            <Setter Property="Background" Value="#207c3aed" />
-                            <Setter Property="BorderBrush" Value="#a78bfa" />
+                            <Setter Property="Background" Value="{DynamicResource AccentBgBrush}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Border.Style>
 
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
-                <ui:SymbolIcon
+            <Grid>
+                <!-- Dashed inner guide -->
+                <Rectangle
+                    Stroke="{DynamicResource BorderSubtleBrush}"
+                    StrokeDashArray="4 4"
+                    StrokeThickness="1"
+                    RadiusX="10"
+                    RadiusY="10"
+                    SnapsToDevicePixels="True" />
+
+                <StackPanel
+                    HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    FontSize="22"
-                    Foreground="#a78bfa"
-                    Symbol="ArrowDownload24" />
-                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                    Margin="16,12">
+                    
+                    <!-- Icon badge -->
+                    <Border
+                        Width="44"
+                        Height="44"
+                        HorizontalAlignment="Center"
+                        Background="{DynamicResource AccentBgBrush}"
+                        BorderBrush="{DynamicResource BorderHighlightBrush}"
+                        BorderThickness="1"
+                        CornerRadius="22">
+                        <ui:SymbolIcon
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="20"
+                            Foreground="{DynamicResource AccentPrimaryBrush}"
+                            Symbol="ArrowUpload24" />
+                    </Border>
+
+                    <!-- Text guidance -->
                     <TextBlock
-                        FontSize="13.5"
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="14.5"
                         FontWeight="SemiBold"
-                        Foreground="#e5e7eb"
+                        Foreground="{DynamicResource TextMainBrush}"
                         Text="{x:Static res:Strings.Drop_Title}" />
-                    <!-- The box also takes a dragged SteamDB / Steam store link (installs that appid)                         a separate line because Drop_Title is already translated into 29 languages and
-                         rewording it would leave every one of them describing the old behaviour. -->
+
                     <TextBlock
-                        Margin="0,2,0,0"
-                        FontSize="11.5"
-                        Foreground="#9ca3af"
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
                         Text="{x:Static res:Strings.Drop_LinkHint}" />
 
-                    <!-- Alternative to dragging: pick files from a dialog. Reuses the same install path. -->
-                    <ui:Button
-                        Margin="0,8,0,0"
-                        Padding="10,5"
-                        HorizontalAlignment="Left"
-                        Click="OnBrowseClick"
-                        Content="{x:Static res:Strings.Drop_BrowseFiles}"
-                        FontSize="11.5"
-                        Icon="{ui:SymbolIcon FolderOpen24}" />
+                    <!-- Action buttons row -->
+                    <StackPanel
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
+                        <Button
+                            Click="OnBrowseClick"
+                            Style="{DynamicResource GentlemanSecondaryButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon
+                                    Margin="0,0,6,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Foreground="{DynamicResource AccentSecondaryBrush}"
+                                    Symbol="FolderOpen24" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{x:Static res:Strings.Drop_BrowseFiles}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
 
-                    <!-- Result banner (inline under the hint) -->
-                    <TextBlock
-                        Margin="0,8,0,0"
-                        FontSize="12"
-                        Text="{Binding ResultText}"
-                        TextWrapping="Wrap"
+                    <!-- Result banner -->
+                    <Border
+                        Margin="0,10,0,0"
+                        Padding="12,6"
+                        HorizontalAlignment="Center"
+                        CornerRadius="{DynamicResource RadiusSmall}"
                         Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#34d399" />
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{DynamicResource SuccessBgBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+                                <Setter Property="BorderThickness" Value="1" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding ResultFailed}" Value="True">
-                                        <Setter Property="Foreground" Value="#f0a868" />
+                                        <Setter Property="Background" Value="{DynamicResource ErrorBgBrush}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                        </Border.Style>
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="Medium"
+                            Text="{Binding ResultText}"
+                            TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ResultFailed}" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Border>
+
                 </StackPanel>
-            </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

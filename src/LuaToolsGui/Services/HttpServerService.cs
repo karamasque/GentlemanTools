@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -577,18 +577,27 @@ public class HttpServerService : IHostedService
     {
         try
         {
-            var iconPath = Path.Combine(AppContext.BaseDirectory, "luatools-icon.png");
-            if (!File.Exists(iconPath))
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string[] candidates =
             {
-                var alt = Path.Combine(AppContext.BaseDirectory, "icon.ico");
-                if (File.Exists(alt))
-                    iconPath = alt;
-                else
-                    return (200, Json(new { success = false, dataUrl = "" }));
+                Path.Combine(AppContext.BaseDirectory, "luatools-icon.png"),
+                Path.Combine(AppContext.BaseDirectory, "gentleman-icon.png"),
+                Path.Combine(appData, "LuaToolsGui", "plugin", "public", "luatools-icon.png"),
+                Path.Combine(AppContext.BaseDirectory, "icon.ico"),
+            };
+
+            string? found = null;
+            foreach (var c in candidates)
+            {
+                if (File.Exists(c)) { found = c; break; }
             }
-            var bytes = File.ReadAllBytes(iconPath);
+
+            if (found is null)
+                return (200, Json(new { success = false, dataUrl = "" }));
+
+            var bytes = File.ReadAllBytes(found);
             var b64 = Convert.ToBase64String(bytes);
-            var mime = iconPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : "image/x-icon";
+            var mime = found.EndsWith(".ico", StringComparison.OrdinalIgnoreCase) ? "image/x-icon" : "image/png";
             return (200, Json(new { success = true, dataUrl = $"data:{mime};base64,{b64}" }));
         }
         catch

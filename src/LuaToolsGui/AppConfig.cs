@@ -6,10 +6,10 @@ namespace LuaToolsGui;
 /// </summary>
 public static class AppConfig
 {
-    public const string SupabaseUrl = "https://db.lua.tools";
+    public const string SupabaseUrl = "https://ylngyiwfxgytlrrbssma.supabase.co";
 
     public const string SupabaseAnonKey =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NzYwMzkzNzYsImV4cCI6MTg5MzQ1NjAwMCwicm9sZSI6ImFub24iLCJpc3MiOiJzdXBhYmFzZSJ9.f_-K38u3odjltP-g_67FVmG32Vg-_-k-lNBvIaVUVBM";
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlsbmd5aXdmeGd5dGxycmJzc21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5Nzc4OTMsImV4cCI6MjEwNDU1Mzg5M30.E13jl5m3VavO97OILecFfc6lZk1D9XMb3SQCMXEbpEc";
 
     public const string ApiBaseUrl = "https://lua.tools";
 
@@ -99,21 +99,16 @@ public static class AppConfig
     /// </summary>
     public static readonly string[] GithubReleasesRepos =
     [
-        "https://github.com/madoiscool/LuaTools",   // primary
-        "https://github.com/mendy-tools/LuaTools",  // backup. Create this repo + re-upload the Velopack
-                                                    // assets ONLY if the primary goes down (404s harmlessly
-                                                    // until then; UpdateService just falls through past it).
+        "https://github.com/karamasque/GentlemanTools",   // primary
+        "https://github.com/karamasque/GentlemanStation", // backup
     ];
 
     /// <summary>The primary releases repo (first in <see cref="GithubReleasesRepos"/>).</summary>
     public static string GithubReleasesRepo => GithubReleasesRepos[0];
 
     // ── Plugin releases (the store-page plugin manager fetches these) ──────────────
-    // Separate from the app's own Velopack self-update repo above. Each release of this repo carries
-    // `plugin.zip` (the frontend) + `winmm.dll` (the loader); the tag is the version (e.g. "v1.2").
-    // Fetched + verified (by asset sha256 digest) through GithubProxy like everything else.
-    public const string PluginReleasesOwner = "madoiscool";
-    public const string PluginReleasesRepo = "LTSP";
+    public const string PluginReleasesOwner = "karamasque";
+    public const string PluginReleasesRepo = "GentlemanTools";
 
     // ── GitHub proxy mirrors (for blocked/throttled regions, e.g. China) ──────────────
     // github.com / api.github.com are often unreachable in some countries. Any GitHub request is tried
