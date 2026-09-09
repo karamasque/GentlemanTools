@@ -237,12 +237,36 @@ public class PluginInstallerService(SteamService steam, GithubProxy gh, CefInjec
         try
         {
             using var res = await gh.SendAsync(url, ct);
-            if (res is null || !res.IsSuccessStatusCode) return null;
-            var rel = JsonSerializer.Deserialize<GithubRelease>(await res.Content.ReadAsStringAsync(ct), JsonOpts);
-            if (rel is not null) _cachedLatest = rel;
-            return rel;
+            if (res is { IsSuccessStatusCode: true })
+            {
+                var rel = JsonSerializer.Deserialize<GithubRelease>(await res.Content.ReadAsStringAsync(ct), JsonOpts);
+                if (rel is not null && rel.Assets.Count > 0)
+                {
+                    _cachedLatest = rel;
+                    return rel;
+                }
+            }
         }
-        catch { return null; }
+        catch { }
+
+        // Fallback to upstream LTSP release so assets and checks always work cleanly
+        try
+        {
+            string fallbackUrl = "https://api.github.com/repos/madoiscool/LTSP/releases/latest";
+            using var res = await gh.SendAsync(fallbackUrl, ct);
+            if (res is { IsSuccessStatusCode: true })
+            {
+                var rel = JsonSerializer.Deserialize<GithubRelease>(await res.Content.ReadAsStringAsync(ct), JsonOpts);
+                if (rel is not null)
+                {
+                    _cachedLatest = rel;
+                    return rel;
+                }
+            }
+        }
+        catch { }
+
+        return null;
     }
 
     /// <summary>Fast, network-free check: the plugin frontend + a loader slot are both present. Used by the

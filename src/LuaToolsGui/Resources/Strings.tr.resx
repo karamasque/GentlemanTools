@@ -371,15 +371,15 @@ Bu, .lua dosyalarını Steam\config\stplug-in konumundan siler.</value></data>
   <data name="Add_FastFetch_NoSource" xml:space="preserve"><value>Bu oyun için kullanılabilir kaynak bulunamadı</value></data>
   <data name="Add_FastFetch_Via" xml:space="preserve"><value>· {0} aracılığıyla</value></data>
   <data name="Plugin_Title" xml:space="preserve"><value>GentlemanStation Eklentisi</value></data>
-  <data name="Plugin_Subtitle" xml:space="preserve"><value>GentlemanStation Steam eklentisi! — Artık Shittenium yerine LuaLoader kullanıyor</value></data>
+  <data name="Plugin_Subtitle" xml:space="preserve"><value>GentlemanStation Steam eklentisi — Steam mağaza sayfalarıyla tam entegre çalışır</value></data>
   <data name="Plugin_CardTitle" xml:space="preserve"><value>Durum</value></data>
   <data name="Plugin_Badge_UpdateAvailable" xml:space="preserve"><value>Güncelleme mevcut</value></data>
   <data name="Plugin_Row_InstalledVersion" xml:space="preserve"><value>Kurulu sürüm</value></data>
   <data name="Plugin_Row_LatestVersion" xml:space="preserve"><value>En son sürüm</value></data>
   <data name="Plugin_Row_Frontend" xml:space="preserve"><value>Ön yüz</value></data>
   <data name="Plugin_Row_Loader" xml:space="preserve"><value>Yükleyici (winmm.dll)</value></data>
-  <data name="Plugin_Millennium_Coexisting" xml:space="preserve"><value>Millennium algılandı — GentlemanStation onun yanında çalışır. Kurulum, yalnızca LuaLoader enjekte etsin diye bu eklentinin Millennium'a ait kopyasını devre dışı bırakır.</value></data>
-  <data name="Plugin_Footer" xml:space="preserve"><value>LuaLoader, Steam klasörünüze kurulur. Bu uygulama arka uç olarak çalışır — sistem tepsisinden kapatırsanız eklenti artık çalışmaz!</value></data>
+  <data name="Plugin_Millennium_Coexisting" xml:space="preserve"><value>Millennium algılandı — GentlemanStation onunla birlikte uyum içinde çalışır.</value></data>
+  <data name="Plugin_Footer" xml:space="preserve"><value>GentlemanStation Yükleyicisi, Steam klasörünüze kurulur. Bu uygulama arka uç olarak çalışır — sistem tepsisinden kapatırsanız eklenti artık çalışmaz!</value></data>
   <data name="Plugin_Btn_Install" xml:space="preserve"><value>Kur</value></data>
   <data name="Plugin_Btn_Update" xml:space="preserve"><value>Güncelle</value></data>
   <data name="Plugin_Btn_Reinstall" xml:space="preserve"><value>Yeniden kur</value></data>
@@ -409,7 +409,7 @@ Bu, .lua dosyalarını Steam\config\stplug-in konumundan siler.</value></data>
   <data name="Plugin_Err_VerifyFailed" xml:space="preserve"><value>{0} karma doğrulaması başarısız oldu.</value></data>
   <data name="Plugin_Err_NoLuatoolsJs" xml:space="preserve"><value>plugin.zip, public/luatools.js dosyasını içermiyordu.</value></data>
   <data name="Plugin_About_Header" xml:space="preserve"><value>Öne çıkan özellikler</value></data>
-  <data name="Plugin_Feature_StoreButton" xml:space="preserve"><value>Steam mağaza sayfalarına bir “Add via GentlemanStation” düğmesi ekler</value></data>
+  <data name="Plugin_Feature_StoreButton" xml:space="preserve"><value>Steam mağaza sayfalarına bir “GentlemanStation ile Ekle” düğmesi ekler</value></data>
   <data name="Plugin_Feature_AutoUpdate" xml:space="preserve"><value>Kendini otomatik olarak günceller</value></data>
   <data name="Plugin_Feature_Millennium" xml:space="preserve"><value>Millennium olsun ya da olmasın çalışır</value></data>
   <data name="Drop_LinkHint" xml:space="preserve"><value>…ya da o oyunu eklemek için bir SteamDB / Steam mağaza bağlantısı sürükleyin.</value></data>
