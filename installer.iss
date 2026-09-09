@@ -1,6 +1,6 @@
 ; Inno Setup Script for GentlemanStation
 #define MyAppName "GentlemanStation"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.2.2"
 #define MyAppPublisher "GentlemanTools"
 #define MyAppURL "https://github.com/karamasque/GentlemanTools"
 #define MyAppExeName "GentlemanStation.exe"
@@ -19,7 +19,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=C:\Users\kilic\.gemini\antigravity-ide\scratch\GentlemanTools\LICENSE
 OutputDir=C:\Users\kilic\Desktop
-OutputBaseFilename=GentlemanStation_Kurulum_v1.2.1
+OutputBaseFilename=GentlemanStation_Kurulum_v1.2.2
 SetupIconFile=C:\Users\kilic\.gemini\antigravity-ide\scratch\GentlemanTools\src\LuaToolsGui\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/ultra64
