@@ -316,6 +316,11 @@ public class HttpServerService : IHostedService
 
     private async Task<(int, string)> HandleCheckSources(long appId)
     {
+        if (!_membership.CurrentMembership.IsActivePremium)
+        {
+            return (200, Json(new { success = false, error = "⚠️ GentlemanStation ile oyun ekleyebilmek için aktif bir VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın.", results = Array.Empty<object>() }));
+        }
+
         // Dynamic source list from the app's real manifest backend (same call the app's
         // DownloadViewModel uses). Sources have no per-source URL. Downloads go through
         // the app's authenticated proxy by source NAME (see HandleDownload).

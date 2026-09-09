@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.IO.Compression;
 using LuaToolsGui.Models;
 
@@ -25,7 +25,8 @@ public class ManifestJobFactory(
     DepotDownloaderService depotTool,
     SteamDepotInfo depotInfo,
     SteamAutoCrackService sac,
-    AppliedFixIndexService fixIndex)
+    AppliedFixIndexService fixIndex,
+    FirebaseMembershipService membership)
 {
     // ── Job builders ─────────────────────────────────────────────────
 
@@ -502,6 +503,13 @@ public class ManifestJobFactory(
     /// </remarks>
     private JobResult InstallManifest(DownloadedFile file, long appId, string gameName)
     {
+        if (!membership.CurrentMembership.IsActivePremium)
+        {
+            toast.Show("VIP Üyelik Gerekli", "GentlemanStation ile oyun ekleyebilmek için lütfen VIP üyelik satın alın.", error: true);
+            DeleteStaged(file.FilePath);
+            return new JobResult(false, "⚠️ Bu işlem için aktif bir GentlemanStation VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın.");
+        }
+
         try
         {
             var result = IsZip(file.FilePath)
