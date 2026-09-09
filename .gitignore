@@ -45,3 +45,4 @@ build-release.ps1
 *.p12
 *.pem
 *.snk
+discord-bot/config.json

@@ -19,6 +19,7 @@ public class HttpServerService : IHostedService
     private readonly LuaInstaller _installer;
     private readonly SteamService _steam;
     private readonly CacheService _cache;
+    private readonly FirebaseMembershipService _membership;
     private readonly IServiceProvider _services;
     private readonly ILogger<HttpServerService> _log;
     private HttpListener? _listener;
@@ -34,11 +35,13 @@ public class HttpServerService : IHostedService
     private const string ManifestBackendUrl = "http://167.235.229.108/check_apis";
 
     public HttpServerService(LuaInstaller installer, SteamService steam, CacheService cache,
+        FirebaseMembershipService membership,
         IServiceProvider services, ILogger<HttpServerService> logger)
     {
         _installer = installer;
         _steam = steam;
         _cache = cache;
+        _membership = membership;
         _services = services;
         _log = logger;
         Directory.CreateDirectory(TempDir);
@@ -343,8 +346,8 @@ public class HttpServerService : IHostedService
         string source = json.TryGetProperty("source", out var s) ? s.GetString() ?? ""
             : json.TryGetProperty("apiName", out var a) ? a.GetString() ?? "" : "";
 
-        if (string.IsNullOrWhiteSpace(source))
-            return (400, JsonErr("source is required"));
+        if (!_membership.CurrentMembership.IsActivePremium)
+            return (403, JsonErr("⚠️ Bu işlem için aktif bir GentlemanStation VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın."));
 
         // The queue's DedupeKey is the real duplicate guard; this keeps the documented 409 contract.
         var queue = _services.GetRequiredService<Services.Downloads.DownloadQueue>();

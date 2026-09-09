@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.IO;
 using LuaToolsGui.Models;
 using LuaToolsGui.Services.Downloads;
@@ -17,6 +17,8 @@ public class PluginAddService(
     HubcapService hubcap,
     SettingsService settings,
     AuthService auth,
+    FirebaseMembershipService membership,
+    ToastService toast,
     DownloadQueue queue,
     ManifestJobFactory jobs)
 {
@@ -59,6 +61,25 @@ public class PluginAddService(
     /// is on, auto-download the best source. FastFetch off leaves the sources for the plugin to pick.</summary>
     public void Start(long appId, string? gameName = null)
     {
+        if (!membership.CurrentMembership.IsActivePremium)
+        {
+            var blockedState = new AddState
+            {
+                AppId = appId,
+                Checking = false,
+                FastFetch = false,
+                SourcesLoaded = false,
+                InstallFailed = true,
+                InstallStatus = "⚠️ VIP Üyelik Gereklidir",
+                Error = "⚠️ GentlemanStation ile oyun ekleyebilmek için aktif bir VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın.",
+                GameName = gameName
+            };
+            _states[appId] = blockedState;
+            PluginLog.Log($"PluginAdd.Start appid={appId} BLOCKED: User is not VIP");
+            toast.Show("VIP Üyelik Gerekli", "GentlemanStation ile oyun ekleyebilmek için lütfen VIP üyelik satın alın.", error: true);
+            return;
+        }
+
         var state = new AddState
         {
             AppId = appId,
@@ -76,6 +97,12 @@ public class PluginAddService(
     /// <summary>Plugin picked a source (FastFetch-off path) → download+install it.</summary>
     public void Pick(long appId, string sourceName)
     {
+        if (!membership.CurrentMembership.IsActivePremium)
+        {
+            toast.Show("VIP Üyelik Gerekli", "GentlemanStation ile oyun ekleyebilmek için lütfen VIP üyelik satın alın.", error: true);
+            return;
+        }
+
         if (!_states.TryGetValue(appId, out var state))
         {
             PluginLog.Log($"PluginAdd.Pick appid={appId} source='{sourceName}' -> NO STATE (Start not called?)");

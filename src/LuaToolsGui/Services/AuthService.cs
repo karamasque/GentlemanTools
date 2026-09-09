@@ -62,6 +62,11 @@ public class AuthService
         // Token still comfortably valid, or refresh succeeds → keep the session
         if (_expiresAt > DateTimeOffset.UtcNow.AddMinutes(2))
         {
+            if ((string.IsNullOrEmpty(UserId) || !ulong.TryParse(UserId, out _)) && !string.IsNullOrEmpty(_accessToken))
+            {
+                if (TryExtractDiscordIdFromJwt(_accessToken) is { } dId)
+                    UserId = dId;
+            }
             AuthStateChanged?.Invoke();
             return true;
         }
@@ -292,8 +297,19 @@ public class AuthService
 
         if (session.User is not null)
         {
-            UserId = session.User.Id;
             var meta = session.User.Metadata;
+            string? discordId = meta?.ProviderId ?? meta?.Sub;
+            if (string.IsNullOrEmpty(discordId) && session.User.Identities != null)
+            {
+                var discordIdentity = session.User.Identities.FirstOrDefault(i => i.Provider == "discord");
+                discordId = discordIdentity?.Id;
+            }
+            if (string.IsNullOrEmpty(discordId))
+            {
+                discordId = TryExtractDiscordIdFromJwt(session.AccessToken);
+            }
+
+            UserId = !string.IsNullOrEmpty(discordId) && ulong.TryParse(discordId, out _) ? discordId : session.User.Id;
             DisplayName = meta?.CustomClaims?.GlobalName ?? meta?.FullName ?? meta?.Name ?? session.User.Email;
             Email = session.User.Email;
             AvatarUrl = meta?.AvatarUrl;
@@ -309,6 +325,38 @@ public class AuthService
             AvatarUrl = AvatarUrl,
             UserId = UserId,
         });
+    }
+
+    public static string? TryExtractDiscordIdFromJwt(string? jwt)
+    {
+        if (string.IsNullOrEmpty(jwt)) return null;
+        try
+        {
+            var parts = jwt.Split('.');
+            if (parts.Length < 2) return null;
+            string payload = parts[1];
+            payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+            byte[] bytes = Convert.FromBase64String(payload.Replace('-', '+').Replace('_', '/'));
+            using var doc = JsonDocument.Parse(bytes);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("user_metadata", out var meta))
+            {
+                if (meta.TryGetProperty("provider_id", out var pid) && pid.ValueKind == JsonValueKind.String)
+                    return pid.GetString();
+                if (meta.TryGetProperty("sub", out var sub) && sub.ValueKind == JsonValueKind.String)
+                {
+                    string subStr = sub.GetString()!;
+                    if (ulong.TryParse(subStr, out _)) return subStr;
+                }
+            }
+            if (root.TryGetProperty("custom_claims", out var cc) && cc.TryGetProperty("sub", out var ccSub) && ccSub.ValueKind == JsonValueKind.String)
+            {
+                string ccSubStr = ccSub.GetString()!;
+                if (ulong.TryParse(ccSubStr, out _)) return ccSubStr;
+            }
+        }
+        catch { }
+        return null;
     }
 
     private void ClearSession()

@@ -26,7 +26,9 @@ public partial class SettingsViewModel : ObservableObject
 
     // ── VIP Membership Properties ─────────────────────────────────────
     [ObservableProperty] private bool _isVipActive;
+    [ObservableProperty] private bool _isLifetime;
     [ObservableProperty] private string _vipStatusText = "Standart Üye";
+    [ObservableProperty] private string _vipBadgeText = "💎 VIP ÜYE";
     [ObservableProperty] private int _vipDaysRemaining;
 
     // License Key Redeem Form
@@ -246,7 +248,17 @@ public partial class SettingsViewModel : ObservableObject
         _membership.MembershipChanged += m =>
         {
             IsVipActive = m.IsActivePremium;
-            VipStatusText = m.StatusText;
+            IsLifetime = m.IsLifetime;
+            if (m.IsActivePremium)
+            {
+                VipStatusText = m.IsLifetime ? "👑 Sınırsız Lifetime VIP (Süresiz)" : $"💎 VIP Üye ({m.DaysRemaining} gün kaldı)";
+                VipBadgeText = m.IsLifetime ? "👑 LIFETIME VIP" : "💎 VIP ÜYE";
+            }
+            else
+            {
+                VipStatusText = "Standart Üye";
+                VipBadgeText = "🆓 STANDART";
+            }
             VipDaysRemaining = m.DaysRemaining;
         };
 

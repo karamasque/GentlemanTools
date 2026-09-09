@@ -50,7 +50,27 @@
                 Style="{StaticResource SectionHeader}"
                 Text="{x:Static res:Strings.Settings_Section_Account}" />
 
-            <Border Style="{StaticResource SettingsCard}" Padding="16">
+            <Border Padding="18" CornerRadius="12">
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource SettingsCard}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsVipActive}" Value="True">
+                                <Setter Property="BorderBrush" Value="#38bdf8" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsLifetime}" Value="True">
+                                <Setter Property="Background" Value="#1E1705" />
+                                <Setter Property="BorderBrush" Value="#F59E0B" />
+                                <Setter Property="BorderThickness" Value="2" />
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#F59E0B" BlurRadius="24" ShadowDepth="0" Opacity="0.5" RenderingBias="Performance" />
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
                 <StackPanel>
                     <!-- Signed-in Account (Discord + VIP) -->
                     <StackPanel Visibility="{Binding IsRealUser, Converter={StaticResource BoolToVis}}">
@@ -62,11 +82,28 @@
                             </Grid.ColumnDefinitions>
 
                             <Border
-                                Width="46"
-                                Height="46"
-                                CornerRadius="23"
-                                BorderBrush="{Binding IsVipActive, Converter={StaticResource BoolToVis}, FallbackValue='#38bdf8'}"
-                                BorderThickness="2">
+                                Width="50"
+                                Height="50"
+                                CornerRadius="25"
+                                BorderThickness="2.5">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderBrush" Value="#334155" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsVipActive}" Value="True">
+                                                <Setter Property="BorderBrush" Value="#38bdf8" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsLifetime}" Value="True">
+                                                <Setter Property="BorderBrush" Value="#FDE047" />
+                                                <Setter Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect Color="#FBBF24" BlurRadius="12" ShadowDepth="0" Opacity="0.7" RenderingBias="Performance" />
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Border.Background>
                                     <ImageBrush ImageSource="{Binding AvatarUrl}" Stretch="UniformToFill" />
                                 </Border.Background>
@@ -75,23 +112,60 @@
                             <StackPanel Grid.Column="1" Margin="14,0" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock
-                                        FontSize="15"
+                                        FontSize="15.5"
                                         FontWeight="Bold"
-                                        Text="{Binding DisplayName}" />
+                                        Text="{Binding DisplayName}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsLifetime}" Value="True">
+                                                        <Setter Property="Foreground" Value="#FEF08A" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                     <!-- VIP Badge -->
                                     <Border
                                         Margin="10,0,0,0"
-                                        Padding="8,2"
-                                        Background="#25eab308"
-                                        BorderBrush="#eab308"
-                                        BorderThickness="1"
+                                        Padding="9,2.5"
                                         CornerRadius="12"
                                         Visibility="{Binding IsVipActive, Converter={StaticResource BoolToVis}}">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#2538bdf8" />
+                                                <Setter Property="BorderBrush" Value="#38bdf8" />
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsLifetime}" Value="True">
+                                                        <Setter Property="Background" Value="#4DEAB308" />
+                                                        <Setter Property="BorderBrush" Value="#FDE047" />
+                                                        <Setter Property="BorderThickness" Value="1.5" />
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#F59E0B" BlurRadius="14" ShadowDepth="0" Opacity="0.65" RenderingBias="Performance" />
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
                                         <TextBlock
                                             FontSize="11"
                                             FontWeight="Bold"
-                                            Foreground="#facc15"
-                                            Text="💎 VIP ÜYE" />
+                                            Text="{Binding VipBadgeText}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#38bdf8" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsLifetime}" Value="True">
+                                                            <Setter Property="Foreground" Value="#FFFBEB" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </Border>
                                 </StackPanel>
                                 <TextBlock
@@ -100,10 +174,20 @@
                                     Text="{Binding Email}" />
                                 <TextBlock
                                     Margin="0,3,0,0"
-                                    FontSize="12"
+                                    FontSize="12.5"
                                     FontWeight="SemiBold"
-                                    Foreground="#38bdf8"
-                                    Text="{Binding VipStatusText}" />
+                                    Text="{Binding VipStatusText}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#38bdf8" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsLifetime}" Value="True">
+                                                    <Setter Property="Foreground" Value="#FCD34D" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
 
                             <ui:Button

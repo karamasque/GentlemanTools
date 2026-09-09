@@ -72,9 +72,22 @@ public partial class OnboardingViewModel : ObservableObject
         if (IsSigningIn) return;
         IsSigningIn = true;
         StatusLine = null;
-        try { await _auth.SignInAsync(); }
-        catch (Exception ex) { StatusLine = ex.Message; }
-        finally { IsSigningIn = false; }
+        try 
+        { 
+            await _auth.SignInAsync(); 
+            if (_auth.IsSignedIn)
+            {
+                Finish();
+            }
+        }
+        catch (Exception ex) 
+        { 
+            StatusLine = ex.Message; 
+        }
+        finally 
+        { 
+            IsSigningIn = false; 
+        }
     }
 
     /// <summary>"Let's go!". Mark onboarding done, close the overlay immediately, then apply the chosen

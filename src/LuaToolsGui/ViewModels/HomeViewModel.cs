@@ -24,6 +24,7 @@ public partial class HomeViewModel : ObservableObject
 
     private readonly SteamService _steam;
     private readonly AuthService _auth;
+    private readonly FirebaseMembershipService _membership;
     private readonly SteamAppListCache _appList;
     private readonly SteamAppInfoCache _appInfo;
     private readonly CoverCache _covers;
@@ -33,6 +34,21 @@ public partial class HomeViewModel : ObservableObject
 
     /// <summary>Drag-and-drop installer shown on the page; refreshes the library after a drop.</summary>
     public DropInstallViewModel Drop { get; }
+
+    // ── VIP / Membership Status ─────────────────────────────────────
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VipBadgeBrush))]
+    private bool _isVip;
+
+    [ObservableProperty] private bool _isLifetime;
+    [ObservableProperty] private string _vipTierName = "Free";
+    [ObservableProperty] private string _vipStatusTitle = "Standart Paket";
+    [ObservableProperty] private string _vipExpiresText = "Lisans anahtarı tanımlanmamış";
+    [ObservableProperty] private string _vipBadgeText = "🆓 Standart Üye";
+    [ObservableProperty] private int _vipDaysRemaining;
+    [ObservableProperty] private string? _avatarUrl;
+
+    public string VipBadgeBrush => IsVip ? "#38bdf8" : "#9ca3af";
 
     // ── Library stats ───────────────────────────────────────────────
     [ObservableProperty] private int _gameCount;
@@ -72,12 +88,13 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty] private string _steamPathDisplay = "C:\\Program Files (x86)\\Steam";
     [ObservableProperty] private string _userDisplayName = "WexL";
 
-    public HomeViewModel(SteamService steam, AuthService auth,
+    public HomeViewModel(SteamService steam, AuthService auth, FirebaseMembershipService membership,
         SteamAppListCache appList, SteamAppInfoCache appInfo, CoverCache covers, DropInstallViewModel drop,
         UnlockerService unlocker, PluginInstallerService plugin, ToastService toast)
     {
         _steam = steam;
         _auth = auth;
+        _membership = membership;
         _appList = appList;
         _appInfo = appInfo;
         _covers = covers;
@@ -85,9 +102,13 @@ public partial class HomeViewModel : ObservableObject
         _plugin = plugin;
         _toast = toast;
         Drop = drop;
-        _auth.AuthStateChanged += RefreshAccount;
-        // Library refresh on any install (drag-drop, plugin, Add page, Fixes) is driven by
-        // LuaInstaller.Installed, wired in App → RefreshLibraryAsync.
+
+        _auth.AuthStateChanged += () =>
+        {
+            RefreshAccount();
+            UpdateMembershipInfo(_membership.CurrentMembership);
+        };
+        _membership.MembershipChanged += UpdateMembershipInfo;
     }
 
     /// <summary>Open a recently-added game in the Manage detail view.</summary>
@@ -135,8 +156,10 @@ public partial class HomeViewModel : ObservableObject
     {
         RefreshSteam();
         RefreshAccount();
+        UpdateMembershipInfo(_membership.CurrentMembership);
         RefreshMode();
         _ = RefreshPluginStatusAsync(); // fire-and-forget: may hit GitHub, must not delay the page
+        _ = _membership.RefreshMembershipAsync();
         await RefreshLibraryAsync();
     }
 
@@ -230,8 +253,44 @@ public partial class HomeViewModel : ObservableObject
     {
         IsSignedIn = _auth.IsSignedIn;
         UserDisplayName = _auth.DisplayName ?? (IsSignedIn ? "WexL" : "Misafir");
+        AvatarUrl = _auth.AvatarUrl;
         AccountStatus = IsSignedIn
             ? (_auth.DisplayName is { } n ? string.Format(Resources.Strings.Home_SignedInAs, n) : Resources.Strings.Home_SignedIn)
             : Resources.Strings.Home_BrowsingAsGuest;
+    }
+
+    private void UpdateMembershipInfo(Models.UserMembership m)
+    {
+        IsVip = m.IsActivePremium;
+        IsLifetime = m.IsLifetime;
+        VipTierName = m.TierName;
+        VipDaysRemaining = m.DaysRemaining;
+        AvatarUrl = _auth.AvatarUrl;
+
+        if (m.IsActivePremium)
+        {
+            if (m.IsLifetime)
+            {
+                VipStatusTitle = "✨ Gentleman Lifetime VIP";
+                VipBadgeText = "👑 SÜRESİZ ALTIN VIP";
+                VipExpiresText = "🌟 Ömür Boyu Sınırsız VIP Ayrıcalıkları Aktif";
+            }
+            else
+            {
+                VipStatusTitle = $"💎 Gentleman VIP ({m.DaysRemaining} Gün Kaldı)";
+                VipBadgeText = "💎 VIP AKTİF";
+                VipExpiresText = m.ExpiresAt.HasValue
+                    ? $"Bitiş Tarihi: {m.ExpiresAt.Value.ToLocalTime():dd.MM.yyyy HH:mm}"
+                    : $"{m.DaysRemaining} gün kaldı";
+            }
+        }
+        else
+        {
+            VipStatusTitle = IsSignedIn ? "Standart Üyelik" : "Misafir Kullanıcı";
+            VipBadgeText = "🆓 STANDART";
+            VipExpiresText = IsSignedIn
+                ? "Tüm VIP ayrıcalıklarına ve anında oyun kilit açıcıya erişmek için lisans anahtarınızı girin."
+                : "VIP ayrıcalıkları ve oyun araçlarına erişmek için lütfen Discord ile giriş yapın.";
+        }
     }
 }

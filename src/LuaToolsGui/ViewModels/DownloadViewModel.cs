@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -81,6 +81,7 @@ public partial class DownloadViewModel : ObservableObject
     private readonly HubcapService _hubcap;
     private readonly SettingsService _settings;
     private readonly AuthService _auth;
+    private readonly FirebaseMembershipService _membership;
     private readonly ToastService _toast;
     private readonly LuaInstaller _installer;
     private readonly SteamAppListCache _appList;
@@ -321,7 +322,7 @@ public partial class DownloadViewModel : ObservableObject
     public void SyncFastFetch() => FastFetch = _settings.FastFetch;
 
     public DownloadViewModel(LuaToolsApiClient api, HubcapService hubcap, SettingsService settings,
-        AuthService auth, ToastService toast, LuaInstaller installer,
+        AuthService auth, FirebaseMembershipService membership, ToastService toast, LuaInstaller installer,
         SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo,
         HardwareAppIdService hardware, DropInstallViewModel drop,
         DownloadQueue queue, ManifestJobFactory jobs)
@@ -330,6 +331,7 @@ public partial class DownloadViewModel : ObservableObject
         _hubcap = hubcap;
         _settings = settings;
         _auth = auth;
+        _membership = membership;
         _toast = toast;
         _installer = installer;
         _appList = appList;
@@ -665,6 +667,13 @@ public partial class DownloadViewModel : ObservableObject
     {
         if (Details is null) return null;
 
+        if (!_membership.CurrentMembership.IsActivePremium)
+        {
+            Error = "⚠️ Bu işlem için aktif bir GentlemanStation VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın.";
+            _toast.Show("VIP Üyelik Gerekli", "Oyun indirmek ve kilit açmak için aktif bir VIP üyeliğiniz olmalıdır.", error: true);
+            return null;
+        }
+
         // Hubcap downloads use the user's OWN key and never touch lua.tools, so a guest with a key
         // configured can download without signing in. Every other source still needs a lua.tools account.
         bool hubcapWithKey = source.NeedsKey && !string.IsNullOrEmpty(_settings.HubcapApiKey);
@@ -698,6 +707,14 @@ public partial class DownloadViewModel : ObservableObject
     private async Task GenerateDlcAsync()
     {
         if (Details?.BaseAppId is null) return;
+
+        if (!_membership.CurrentMembership.IsActivePremium)
+        {
+            Error = "⚠️ DLC kilidi açabilmek için aktif bir GentlemanStation VIP üyeliğiniz olmalıdır.";
+            _toast.Show("VIP Üyelik Gerekli", "DLC kilidi açabilmek için aktif bir VIP üyeliğiniz olmalıdır.", error: true);
+            return;
+        }
+
         if (await PromptSignInIfGuestAsync(Resources.Strings.Add_SignIn_Download)) return;
 
         Error = null;

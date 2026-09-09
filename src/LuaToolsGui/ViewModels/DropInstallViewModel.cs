@@ -21,17 +21,22 @@ public partial class DropInstallViewModel : ObservableObject
     private readonly SteamAppListCache _appList;
     private readonly SteamAppInfoCache _appInfo;
     private readonly SteamDepotInfo _depotInfo;
+    private readonly FirebaseMembershipService _membership;
+    private readonly ToastService _toast;
 
     /// <summary>Raised after a successful (non-cancelled) install so the page can refresh its library.</summary>
     public event Action? Installed;
 
     public DropInstallViewModel(LuaInstaller installer, SteamAppListCache appList,
-        SteamAppInfoCache appInfo, SteamDepotInfo depotInfo)
+        SteamAppInfoCache appInfo, SteamDepotInfo depotInfo,
+        FirebaseMembershipService membership, ToastService toast)
     {
         _installer = installer;
         _appList = appList;
         _appInfo = appInfo;
         _depotInfo = depotInfo;
+        _membership = membership;
+        _toast = toast;
     }
 
     // Per-confirm steamcmd lookup: depot/DLC id → its real depot info (name/size/os/lang).
@@ -84,6 +89,14 @@ public partial class DropInstallViewModel : ObservableObject
     {
         if (SteamLinkParser.AppIdFrom(text) is not { } appId || InstallByAppId is null) return false;
 
+        if (!_membership.CurrentMembership.IsActivePremium)
+        {
+            ResultFailed = true;
+            ResultText = "⚠️ Bu işlem için aktif bir GentlemanStation VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın.";
+            _toast.Show("VIP Üyelik Gerekli", "Oyun / Lua kurulumu yapabilmek için aktif bir VIP üyeliğiniz olmalıdır.", error: true);
+            return false;
+        }
+
         await InstallByAppId(appId);
         return true;
     }
@@ -91,6 +104,14 @@ public partial class DropInstallViewModel : ObservableObject
     /// <summary>Entry point: hand the dropped file paths to install (called by the view's Drop handler).</summary>
     public async Task HandleDropAsync(IEnumerable<string> paths)
     {
+        if (!_membership.CurrentMembership.IsActivePremium)
+        {
+            ResultFailed = true;
+            ResultText = "⚠️ Bu işlem için aktif bir GentlemanStation VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın.";
+            _toast.Show("VIP Üyelik Gerekli", "Sürükle-bırak ile dosya yükleyebilmek için aktif bir VIP üyeliğiniz olmalıdır.", error: true);
+            return;
+        }
+
         var files = paths.Where(LuaInstaller.IsInstallable).ToList();
         if (files.Count == 0)
         {

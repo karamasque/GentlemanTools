@@ -28,6 +28,11 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
             RootNavigation.Navigate(typeof(HomeView));
             try { await viewModel.InitializeAsync(); }
             catch { /* auth restore failed (e.g. offline). UI still loads as guest */ }
+
+            if (viewModel.IsGuest)
+            {
+                viewModel.Onboarding.IsOpen = true;
+            }
         };
     }
 

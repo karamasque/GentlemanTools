@@ -5,178 +5,155 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:res="clr-namespace:LuaToolsGui.Resources"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:LuaToolsGui.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:OnboardingViewModel}"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <!-- Segmented Yes/No button: Primary when its bound bool matches this button's value. -->
-        <Style x:Key="ChoiceButton" BasedOn="{StaticResource {x:Type ui:Button}}" TargetType="ui:Button">
-            <Setter Property="MinWidth" Value="92" />
-            <Setter Property="Margin" Value="6,0,0,0" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-        </Style>
-    </UserControl.Resources>
-
-    <!-- Dim scrim + centered welcome card (in-window overlay, not a Popup). Visibility is controlled by
-         the host in MainWindow via Onboarding.IsOpen. -->
-    <Grid Background="#66000000">
+    <!-- Dim scrim background -->
+    <Grid Background="#CC07090E">
         <Border
-            MaxWidth="640"
-            Margin="16"
-            Padding="30,32"
+            MaxWidth="480"
+            Margin="20"
+            Padding="36,40"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Background="#1c1c22"
-            BorderBrush="#33FFFFFF"
+            Background="#12151D"
+            BorderBrush="#25FFFFFF"
             BorderThickness="1"
-            CornerRadius="14">
-            <StackPanel>
-                <!-- Title -->
+            CornerRadius="16">
+            <StackPanel HorizontalAlignment="Center" Width="400">
+                <!-- App Logo & Title -->
+                <Border
+                    Width="68"
+                    Height="68"
+                    CornerRadius="34"
+                    Background="#1E2333"
+                    BorderBrush="#38bdf8"
+                    BorderThickness="2"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,16">
+                    <Image Source="pack://application:,,,/icon.ico" Width="38" Height="38" Stretch="Uniform" />
+                </Border>
+
                 <TextBlock
-                    FontSize="21"
+                    FontSize="24"
                     FontWeight="Bold"
-                    Text="{x:Static res:Strings.Onboarding_Title}"
+                    HorizontalAlignment="Center"
+                    Foreground="White"
+                    Text="GentlemanStation" />
+
+                <TextBlock
+                    Margin="0,6,0,24"
+                    FontSize="13.5"
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center"
+                    Foreground="#9ca3af"
+                    Text="Uygulamaya erişmek ve VIP ayrıcalıklarınıza ulaşmak için lütfen Discord hesabınızla giriş yapın."
                     TextWrapping="Wrap" />
 
-                <!-- Sign in (guest only) -->
+                <!-- Guest State: Discord Login -->
                 <StackPanel Visibility="{Binding IsGuest, Converter={StaticResource BoolToVis}}">
-                    <TextBlock
-                        Margin="0,16,0,0"
-                        FontSize="13"
-                        Foreground="#9ca3af"
-                        Text="{x:Static res:Strings.Onboarding_SignIn_Blurb}"
-                        TextWrapping="Wrap" />
-                    <ui:Button
-                        Margin="0,10,0,0"
-                        HorizontalAlignment="Left"
-                        Appearance="Primary"
+                    <!-- Big Discord Button -->
+                    <Button
+                        Height="46"
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Stretch"
+                        Background="#5865F2"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontWeight="Bold"
+                        FontSize="14"
+                        Cursor="Hand"
                         Command="{Binding SignInCommand}"
-                        Content="{x:Static res:Strings.Nav_SignInDiscord}"
-                        Icon="{ui:SymbolIcon Person24}"
-                        Visibility="{Binding IsSigningIn, Converter={StaticResource InverseBoolToVis}}" />
-                    <!-- Signing-in spinner -->
+                        Visibility="{Binding IsSigningIn, Converter={StaticResource InverseBoolToVis}}">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Person24" FontSize="20" Foreground="White" Margin="0,0,10,0" />
+                            <TextBlock Text="🎮 Discord ile Giriş Yap" FontWeight="Bold" FontSize="14" Foreground="White" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Waiting for browser -->
                     <StackPanel
-                        Margin="0,10,0,0"
+                        Margin="0,14,0,0"
+                        HorizontalAlignment="Center"
                         Orientation="Horizontal"
                         Visibility="{Binding IsSigningIn, Converter={StaticResource BoolToVis}}">
-                        <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" />
+                        <ui:ProgressRing Width="18" Height="18" IsIndeterminate="True" />
                         <TextBlock
-                            Margin="8,0,0,0"
+                            Margin="10,0,0,0"
                             VerticalAlignment="Center"
-                            FontSize="12"
+                            FontSize="13"
                             Foreground="#9ca3af"
-                            Text="{x:Static res:Strings.Nav_WaitingForBrowser}" />
+                            Text="Tarayıcıda yetkilendirme bekleniyor..." />
                     </StackPanel>
-                    <!-- Sign-in error -->
+
+                    <!-- Error if any -->
                     <TextBlock
-                        Margin="0,8,0,0"
-                        FontSize="11.5"
+                        Margin="0,10,0,0"
+                        FontSize="12"
+                        HorizontalAlignment="Center"
                         Foreground="#f87171"
                         Text="{Binding StatusLine}"
                         TextWrapping="Wrap"
                         Visibility="{Binding StatusLine, Converter={StaticResource NullToCollapsed}}" />
+
+                    <!-- Guest Bypass Link -->
+                    <Button
+                        Margin="0,18,0,0"
+                        HorizontalAlignment="Center"
+                        Background="Transparent"
+                        Foreground="#6b7280"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="12.5"
+                        Command="{Binding FinishCommand}"
+                        Content="Giriş yapmadan devam et (Misafir)" />
                 </StackPanel>
-                <!-- Signed-in confirmation -->
-                <TextBlock
-                    Margin="0,16,0,0"
-                    FontSize="13"
-                    FontWeight="SemiBold"
-                    Foreground="#4ade80"
-                    Text="{x:Static res:Strings.Onboarding_SignedIn}"
-                    Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}" />
 
-                <Border Height="1" Margin="0,24,0,0" Background="#1FFFFFFF" />
+                <!-- Signed In Confirmation State -->
+                <StackPanel Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}">
+                    <Border
+                        Padding="14"
+                        Background="#1A22c55e"
+                        BorderBrush="#3322c55e"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="20" Foreground="#4ade80" Margin="0,0,8,0" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#4ade80"
+                                VerticalAlignment="Center"
+                                Text="Discord ile Giriş Yapıldı!" />
+                        </StackPanel>
+                    </Border>
 
-                <!-- Apply recommended settings -->
-                <Grid Margin="0,24,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Margin="0,0,28,0" VerticalAlignment="Center">
-                        <TextBlock FontSize="14" FontWeight="SemiBold" Text="{x:Static res:Strings.Onboarding_Recommended_Title}" />
-                        <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="#7c8593" Text="{x:Static res:Strings.Onboarding_Recommended_Detail}" TextWrapping="Wrap" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
-                        <ui:Button Command="{Binding SetApplyRecommendedCommand}" Content="{x:Static res:Strings.Onboarding_Yes}">
-                            <ui:Button.CommandParameter><sys:Boolean>True</sys:Boolean></ui:Button.CommandParameter>
-                            <ui:Button.Style>
-                                <Style BasedOn="{StaticResource ChoiceButton}" TargetType="ui:Button">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ApplyRecommended}" Value="True">
-                                            <Setter Property="Appearance" Value="Primary" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ui:Button.Style>
-                        </ui:Button>
-                        <ui:Button Command="{Binding SetApplyRecommendedCommand}" Content="{x:Static res:Strings.Onboarding_No}">
-                            <ui:Button.CommandParameter><sys:Boolean>False</sys:Boolean></ui:Button.CommandParameter>
-                            <ui:Button.Style>
-                                <Style BasedOn="{StaticResource ChoiceButton}" TargetType="ui:Button">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ApplyRecommended}" Value="False">
-                                            <Setter Property="Appearance" Value="Primary" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ui:Button.Style>
-                        </ui:Button>
-                    </StackPanel>
-                </Grid>
-
-                <!-- Install plugin -->
-                <Grid Margin="0,22,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Margin="0,0,28,0" VerticalAlignment="Center">
-                        <TextBlock FontSize="14" FontWeight="SemiBold" Text="{x:Static res:Strings.Onboarding_Plugin_Title}" />
-                        <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="#7c8593" Text="{x:Static res:Strings.Onboarding_Plugin_Detail}" TextWrapping="Wrap" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
-                        <ui:Button Command="{Binding SetInstallPluginCommand}" Content="{x:Static res:Strings.Onboarding_Yes}">
-                            <ui:Button.CommandParameter><sys:Boolean>True</sys:Boolean></ui:Button.CommandParameter>
-                            <ui:Button.Style>
-                                <Style BasedOn="{StaticResource ChoiceButton}" TargetType="ui:Button">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding InstallPlugin}" Value="True">
-                                            <Setter Property="Appearance" Value="Primary" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ui:Button.Style>
-                        </ui:Button>
-                        <ui:Button Command="{Binding SetInstallPluginCommand}" Content="{x:Static res:Strings.Onboarding_No}">
-                            <ui:Button.CommandParameter><sys:Boolean>False</sys:Boolean></ui:Button.CommandParameter>
-                            <ui:Button.Style>
-                                <Style BasedOn="{StaticResource ChoiceButton}" TargetType="ui:Button">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding InstallPlugin}" Value="False">
-                                            <Setter Property="Appearance" Value="Primary" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ui:Button.Style>
-                        </ui:Button>
-                    </StackPanel>
-                </Grid>
-
-                <!-- Let's go! -->
-                <ui:Button
-                    Margin="0,28,0,0"
-                    Padding="0,10"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    Appearance="Primary"
-                    Command="{Binding FinishCommand}"
-                    Content="{x:Static res:Strings.Onboarding_Go}"
-                    FontSize="14"
-                    IsEnabled="{Binding NotBusy}" />
+                    <Button
+                        Height="44"
+                        HorizontalAlignment="Stretch"
+                        Background="#38bdf8"
+                        Foreground="#0f172a"
+                        BorderThickness="0"
+                        FontWeight="Bold"
+                        FontSize="14"
+                        Cursor="Hand"
+                        Command="{Binding FinishCommand}"
+                        Content="Uygulamaya Başla 🚀">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8" />
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
             </StackPanel>
         </Border>
     </Grid>

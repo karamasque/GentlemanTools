@@ -141,10 +141,19 @@ public class SupabaseUser
     [JsonPropertyName("id")] public string Id { get; set; } = "";
     [JsonPropertyName("email")] public string? Email { get; set; }
     [JsonPropertyName("user_metadata")] public UserMetadata? Metadata { get; set; }
+    [JsonPropertyName("identities")] public List<UserIdentity>? Identities { get; set; }
+}
+
+public class UserIdentity
+{
+    [JsonPropertyName("id")] public string? Id { get; set; }
+    [JsonPropertyName("provider")] public string? Provider { get; set; }
 }
 
 public class UserMetadata
 {
+    [JsonPropertyName("provider_id")] public string? ProviderId { get; set; }
+    [JsonPropertyName("sub")] public string? Sub { get; set; }
     [JsonPropertyName("full_name")] public string? FullName { get; set; }
     [JsonPropertyName("name")] public string? Name { get; set; }
     [JsonPropertyName("avatar_url")] public string? AvatarUrl { get; set; }

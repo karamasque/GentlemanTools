@@ -1,0 +1,10 @@
+{
+  "bot_token": "DISCORD_BOT_TOKEN_BURAYA",
+  "guild_id": "",
+  "firebase_project_id": "gentlemanstation",
+  "roles": {
+    "vip_role_id": "1547368688150126682",
+    "lifetime_role_id": ""
+  },
+  "admin_role_id": ""
+}
