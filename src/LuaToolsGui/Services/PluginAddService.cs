@@ -70,7 +70,7 @@ public class PluginAddService(
                 FastFetch = false,
                 SourcesLoaded = false,
                 InstallFailed = true,
-                InstallStatus = "⚠️ VIP Üyelik Gereklidir",
+                InstallStatus = null,
                 Error = "⚠️ GentlemanStation ile oyun ekleyebilmek için aktif bir VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın.",
                 GameName = gameName
             };

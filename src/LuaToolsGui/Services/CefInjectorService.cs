@@ -516,7 +516,21 @@ if(real&&typeof real.callServerMethod==='function'){
             .Replace("https://discord.gg/hubcapsmanifest", "https://discord.gg/Sc6rxh39Zn")
             .Replace("Lua.Tools", "GentlemanStation")
             .Replace("Lua Tools", "GentlemanStation")
-            .Replace("LuaTools", "GentlemanStation");
+            .Replace("LuaTools", "GentlemanStation")
+            .Replace("if (st.installed || st.installStatus) {", @"if (st.installFailed || st.error) {
+            finished = true;
+            clearInterval(timer);
+            runState.pollTimer = null;
+            runState.inProgress = false;
+            runState.appid = null;
+            if (titleEl) { titleEl.textContent = ""⚠️ VIP Üyelik Gerekli""; titleEl.style.color = ""#ef4444""; }
+            if (statusEl) { statusEl.textContent = st.error || st.installStatus || ""Bu işlem için VIP üyelik gereklidir. Lütfen VIP üyelik satın alınız.""; statusEl.style.color = ""#f87171""; }
+            if (wrap) wrap.style.display = ""none"";
+            const hide = q("".luatools-hide-btn"");
+            if (hide) hide.innerHTML = ""<span>"" + lt(""Close"") + ""</span>"";
+            return;
+          }
+          if (st.installed || st.installStatus) {");
     }
 }
 

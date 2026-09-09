@@ -239,6 +239,15 @@ public class HttpServerService : IHostedService
     /// usage, FastFetch auto-download). Uses services only; the app window is never touched.</summary>
     private async Task<(int, string)> HandleAdd(long appId, HttpListenerRequest req)
     {
+        if (!_membership.CurrentMembership.IsActivePremium)
+        {
+            return (200, Json(new
+            {
+                success = false,
+                error = "⚠️ GentlemanStation ile oyun ekleyebilmek için aktif bir VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın."
+            }));
+        }
+
         // The store page passes the game name it already displays, so PluginAddService can skip a
         // lua.tools /details lookup. Best-effort: a missing/blank name just falls back to a fetch.
         string? name = null;
@@ -257,6 +266,23 @@ public class HttpServerService : IHostedService
     /// <summary>Serialize the headless add state so the plugin popup mirrors what the app would show.</summary>
     private (int, string) HandleAddStatus(long appId)
     {
+        if (!_membership.CurrentMembership.IsActivePremium)
+        {
+            return (200, Json(new
+            {
+                success = false,
+                appid = appId,
+                checking = false,
+                fastFetch = false,
+                sourcesLoaded = false,
+                sources = Array.Empty<object>(),
+                installStatus = (string?)null,
+                installFailed = true,
+                error = "⚠️ GentlemanStation ile oyun ekleyebilmek için aktif bir VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın.",
+                installed = false
+            }));
+        }
+
         var svc = _services.GetRequiredService<PluginAddService>();
         var st = svc.GetState(appId);
         bool installed = _installer.ReadInstalledLua(appId) != null;
@@ -296,6 +322,9 @@ public class HttpServerService : IHostedService
     /// <summary>Plugin picked a source by name (FastFetch-off path) → download+install it headlessly.</summary>
     private async Task<(int, string)> HandleAddSource(long appId, HttpListenerRequest req)
     {
+        if (!_membership.CurrentMembership.IsActivePremium)
+            return (403, JsonErr("⚠️ GentlemanStation ile oyun ekleyebilmek için aktif bir VIP üyeliğiniz olmalıdır. Lütfen VIP üyelik satın alın."));
+
         string body;
         using (var reader = new StreamReader(req.InputStream, req.ContentEncoding))
             body = await reader.ReadToEndAsync();
