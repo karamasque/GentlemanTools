@@ -166,7 +166,8 @@ async def on_ready():
                 print(f"[+] Mevcut Üye Senkronize Edildi: {member.display_name} -> 💎 30 Gün VIP")
 
     print("=" * 50)
-    await bot.change_presence(activity=discord.CustomActivity(name="Hepinizin Amg"))
+    await bot.change_presence(activity=discord.CustomActivity(name="Zapay Yekalı Steam 🤖😂"))
+
 
 
 # ── Prefix Commands (!vip-ver, !vip-durum vb.) ──────────────────────
