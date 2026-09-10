@@ -50,9 +50,9 @@ PROJECT_ID = config.get("firebase_project_id", "gentlemanstation")
 # ── Firebase REST Helpers ───────────────────────────────────────────
 
 def set_user_vip(uid: str, display_name: str, tier: str, days: int = 30, is_lifetime: bool = False):
-    """Save VIP status to Firestore users/{uid} (creates document if missing)"""
+    """Save VIP status to Firestore users/{uid}"""
     now = datetime.now(timezone.utc)
-    if is_lifetime or tier.lower() == "lifetime":
+    if is_lifetime or str(tier).lower() == "lifetime":
         expires_at = now + timedelta(days=36500) # ~100 years
         tier_name = "Lifetime"
     else:
@@ -171,103 +171,6 @@ def redeem_license_key(key_code: str, uid: str, display_name: str):
     }
 
 
-# ── Discord Bot Setup ───────────────────────────────────────────────
-
-intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
-
-class GentlemanBot(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix="!", intents=intents)
-
-    async def setup_hook(self):
-        # Register persistent view so button stays active across restarts
-        self.add_view(KeyPanelButtonView())
-
-bot = GentlemanBot()
-
-
-# ── Otomatik Dönen Durum Mesajları ──────────────────────────────────
-
-STATUS_MESSAGES = cycle([
-    "Zapay Yekalı Steam 🤖😂",
-    "Gabe Newell ile tavla oynuyor 🎲",
-    "Gözler GentlemanStation VIP'lerde 👀🎩",
-    "Manifestleri 300 km/s ile indiriyor 🏎️💨",
-    "Yapay Zeka değil, Zapay Yeka 🧠🍷",
-    "Steam Cüzdan Kodları yükleniyor... %99 💸",
-    "👑 GentlemanStation VIP Suite",
-    "/vip-durum | GentlemanStation 🎩"
-])
-
-@tasks.loop(seconds=15)
-async def rotate_status():
-    msg = next(STATUS_MESSAGES)
-    try:
-        await bot.change_presence(activity=discord.CustomActivity(name=msg))
-    except Exception:
-        pass
-
-
-# ── Özelden (DM) VIP Bitiş Hatırlatıcısı ─────────────────────────────
-
-notified_reminders = set()
-
-@tasks.loop(hours=6)
-async def check_vip_expirations():
-    """Kullanıcıların VIP bitiş tarihini kontrol eder ve sadece ÖZELDEN (DM) bildirir."""
-    await bot.wait_until_ready()
-    now = datetime.now(timezone.utc)
-    today_str = now.strftime("%Y-%m-%d")
-
-    for g in bot.guilds:
-        for member in g.members:
-            if member.bot:
-                continue
-
-            try:
-                is_premium, tier, exp_str = get_user_vip(str(member.id))
-                if not is_premium or tier.lower() == "lifetime" or not exp_str:
-                    continue
-
-                # Parse date
-                try:
-                    exp_date = datetime.fromisoformat(exp_str.replace("Z", "+00:00"))
-                except Exception:
-                    continue
-
-                remaining = exp_date - now
-                days_left = remaining.days
-
-                # 3 gün veya 1 gün kala hatırlat
-                if 0 <= days_left <= 3:
-                    notify_key = f"{member.id}_{today_str}_{days_left}"
-                    if notify_key not in notified_reminders:
-                        notified_reminders.add(notify_key)
-                        
-                        # Özelden (DM) gönder
-                        try:
-                            embed = discord.Embed(
-                                title="⏳ GentlemanStation VIP Süreniz Dolmak Üzere!",
-                                description=(
-                                    f"Merhaba **{member.display_name}**,\n\n"
-                                    f"**GentlemanStation** `{tier}` üyeliğinizin sona ermesine **{max(days_left, 1)} gün** kaldı!\n\n"
-                                    f"📅 **Bitiş Tarihi:** `{exp_date.strftime('%d.%m.%Y %H:%M')}`\n"
-                                    f"Kesintisiz erişim ve VIP ayrıcalıklarına devam etmek için lisansınızı yenileyebilirsiniz. 🎩"
-                                ),
-                                color=0xF59E0B,
-                                timestamp=now
-                            )
-                            embed.set_footer(text="GentlemanStation VIP Bildirim Sistemi", icon_url=bot.user.display_avatar.url)
-                            await member.send(embed=embed)
-                            print(f"[DM BİLDİRİM] {member.display_name} kullanıcısına {days_left} gün kala DM hatırlatması iletildi.")
-                        except Exception as e:
-                            print(f"[DM UYARI] {member.display_name} kullanıcısına DM atılamadı: {e}")
-            except Exception as e:
-                pass
-
-
 # ── Lisans Key Modal & Buton Arayüzü ─────────────────────────────────
 
 class KeyRedeemModal(discord.ui.Modal, title="🔑 Lisans Anahtarı Kullan"):
@@ -316,7 +219,7 @@ class KeyRedeemModal(discord.ui.Modal, title="🔑 Lisans Anahtarı Kullan"):
             dm_embed.add_field(name="👑 Paket", value="`👑 Lifetime Altın VIP`" if is_life else f"`💎 {tier}`", inline=True)
             dm_embed.add_field(name="⏳ Süre", value="`Süresiz (Ömür Boyu)`" if is_life else f"`{days} Gün`", inline=True)
             dm_embed.add_field(name="📅 Bitiş Tarihi", value="`Süresiz`" if is_life else f"`{expires_at.strftime('%d.%m.%Y %H:%M')}`", inline=False)
-            dm_embed.set_footer(text="GentlemanStation VIP Suite", icon_url=bot.user.display_avatar.url)
+            dm_embed.set_footer(text="GentlemanStation VIP Suite", icon_url=bot.user.display_avatar.url if bot.user else None)
             await interaction.user.send(embed=dm_embed)
         except Exception:
             pass
@@ -338,55 +241,101 @@ class KeyPanelButtonView(discord.ui.View):
         await interaction.response.send_modal(KeyRedeemModal())
 
 
-# ── Bot Başlangıç Olayı (on_ready) ───────────────────────────────────
+# ── Discord Bot Setup ───────────────────────────────────────────────
 
-@bot.event
-async def on_ready():
-    print("=" * 50)
-    print(f"[*] GentlemanStation Discord Bot Aktif: {bot.user}")
-    print(f"[*] Bağlı Sunucu Sayısı: {len(bot.guilds)}")
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
 
-    cfg = load_config()
-    vip_role_id = cfg.get("roles", {}).get("vip_role_id")
-    lifetime_role_id = cfg.get("roles", {}).get("lifetime_role_id")
+class GentlemanBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix="!", intents=intents, help_command=None)
 
-    # Mevcut sunucu üyelerini tara ve VIP rolü olanları otomatik Firebase'e işle
+    async def setup_hook(self):
+        self.add_view(KeyPanelButtonView())
+
+bot = GentlemanBot()
+
+
+# ── Otomatik Dönen Durum Mesajları ──────────────────────────────────
+
+STATUS_MESSAGES = cycle([
+    "Zapay Yekalı Steam 🤖😂",
+    "Gabe Newell ile tavla oynuyor 🎲",
+    "Gözler GentlemanStation VIP'lerde 👀🎩",
+    "Manifestleri 300 km/s ile indiriyor 🏎️💨",
+    "Yapay Zeka değil, Zapay Yeka 🧠🍷",
+    "Steam Cüzdan Kodları yükleniyor... %99 💸",
+    "👑 GentlemanStation VIP Suite",
+    "!key-paneli | GentlemanStation 🎩"
+])
+
+@tasks.loop(seconds=15)
+async def rotate_status():
+    msg = next(STATUS_MESSAGES)
+    try:
+        await bot.change_presence(activity=discord.CustomActivity(name=msg))
+    except Exception:
+        pass
+
+
+# ── Özelden (DM) VIP Bitiş Hatırlatıcısı ─────────────────────────────
+
+notified_reminders = set()
+
+@tasks.loop(hours=6)
+async def check_vip_expirations():
+    """Kullanıcıların VIP bitiş tarihini kontrol eder ve sadece ÖZELDEN (DM) bildirir."""
+    await bot.wait_until_ready()
+    now = datetime.now(timezone.utc)
+    today_str = now.strftime("%Y-%m-%d")
+
     for g in bot.guilds:
-        try:
-            bot.tree.copy_global_to(guild=g)
-            await bot.tree.sync(guild=g)
-            print(f"[+] Slash komutlar senkronize edildi: {g.name} ({g.id})")
-        except Exception as e:
-            print(f"[-] Senkronizasyon uyarısı ({g.id}): {e}")
-
         for member in g.members:
             if member.bot:
                 continue
-            has_lifetime = any(
-                (str(r.id) == str(lifetime_role_id) and str(lifetime_role_id) != str(vip_role_id))
-                or any(kw in r.name.lower() for kw in ["lifetime", "sınırsız", "omurboyu", "ömür", "gold", "altın"])
-                for r in member.roles
-            )
-            has_vip = any(str(r.id) == str(vip_role_id) for r in member.roles)
-            
-            if has_lifetime:
-                set_user_vip(str(member.id), member.display_name, "Lifetime", 36500, is_lifetime=True)
-            elif has_vip:
-                set_user_vip(str(member.id), member.display_name, "VIP", 30, is_lifetime=False)
 
-    print("=" * 50)
+            try:
+                is_premium, tier, exp_str = get_user_vip(str(member.id))
+                if not is_premium or tier.lower() == "lifetime" or not exp_str:
+                    continue
 
-    # Görevleri Başlat
-    if not rotate_status.is_running():
-        rotate_status.start()
-    if not check_vip_expirations.is_running():
-        check_vip_expirations.start()
+                try:
+                    exp_date = datetime.fromisoformat(exp_str.replace("Z", "+00:00"))
+                except Exception:
+                    continue
+
+                remaining = exp_date - now
+                days_left = remaining.days
+
+                if 0 <= days_left <= 3:
+                    notify_key = f"{member.id}_{today_str}_{days_left}"
+                    if notify_key not in notified_reminders:
+                        notified_reminders.add(notify_key)
+                        try:
+                            embed = discord.Embed(
+                                title="⏳ GentlemanStation VIP Süreniz Dolmak Üzere!",
+                                description=(
+                                    f"Merhaba **{member.display_name}**,\n\n"
+                                    f"**GentlemanStation** `{tier}` üyeliğinizin sona ermesine **{max(days_left, 1)} gün** kaldı!\n\n"
+                                    f"📅 **Bitiş Tarihi:** `{exp_date.strftime('%d.%m.%Y %H:%M')}`\n"
+                                    f"Kesintisiz erişim ve VIP ayrıcalıklarına devam etmek için lisansınızı yenileyebilirsiniz. 🎩"
+                                ),
+                                color=0xF59E0B,
+                                timestamp=now
+                            )
+                            embed.set_footer(text="GentlemanStation VIP Bildirim Sistemi", icon_url=bot.user.display_avatar.url if bot.user else None)
+                            await member.send(embed=embed)
+                            print(f"[DM BİLDİRİM] {member.display_name} kullanıcısına {days_left} gün kala DM hatırlatması iletildi.")
+                        except Exception as e:
+                            print(f"[DM UYARI] {member.display_name} kullanıcısına DM atılamadı: {e}")
+            except Exception:
+                pass
 
 
-# ── Prefix Commands (!vip-ver, !key-paneli vb.) ─────────────────────
+# ── Prefix Commands (!key-paneli, !vip-ver vb.) ─────────────────────
 
-@bot.command(name="key-paneli", aliases=["keypanel", "lisans-paneli"])
-@commands.has_permissions(administrator=True)
+@bot.command(name="key-paneli", aliases=["keypanel", "lisans-paneli", "panel"])
 async def prefix_key_paneli(ctx):
     """Kanala butonlu lisans aktivasyon paneli gönderir."""
     embed = discord.Embed(
@@ -399,15 +348,13 @@ async def prefix_key_paneli(ctx):
         color=0xFBBF24,
         timestamp=datetime.now(timezone.utc)
     )
-    embed.set_thumbnail(url=bot.user.display_avatar.url)
+    if bot.user:
+        embed.set_thumbnail(url=bot.user.display_avatar.url)
+        embed.set_footer(text="GentlemanStation VIP Suite • 7/24 Aktif", icon_url=bot.user.display_avatar.url)
+    
     embed.add_field(name="🛡️ Otomatik Teslimat", value="Key girdiğiniz anda rolünüz ve süreniz anında tanımlanır.", inline=False)
-    embed.set_footer(text="GentlemanStation VIP Suite • 7/24 Aktif", icon_url=bot.user.display_avatar.url)
 
     await ctx.send(embed=embed, view=KeyPanelButtonView())
-    try:
-        await ctx.message.delete()
-    except Exception:
-        pass
 
 @bot.command(name="vip-ver", aliases=["vipver"])
 @commands.has_permissions(administrator=True)
@@ -489,8 +436,12 @@ async def prefix_vip_durum(ctx, kullanici: discord.Member = None):
 # ── Slash Commands ──────────────────────────────────────────────────
 
 @bot.tree.command(name="key-paneli", description="Kanala butonlu lisans aktivasyon paneli gönderir.")
-@app_commands.checks.has_permissions(administrator=True)
 async def slash_key_paneli(interaction: discord.Interaction):
+    # Only allow administrators or guild managers
+    if not interaction.user.guild_permissions.administrator and interaction.user.id != interaction.guild.owner_id:
+        await interaction.response.send_message("❌ Bu komutu sadece sunucu yöneticileri kullanabilir.", ephemeral=True)
+        return
+
     embed = discord.Embed(
         title="🎩 GentlemanStation Lisans Aktivasyon Paneli",
         description=(
@@ -501,9 +452,11 @@ async def slash_key_paneli(interaction: discord.Interaction):
         color=0xFBBF24,
         timestamp=datetime.now(timezone.utc)
     )
-    embed.set_thumbnail(url=bot.user.display_avatar.url)
+    if bot.user:
+        embed.set_thumbnail(url=bot.user.display_avatar.url)
+        embed.set_footer(text="GentlemanStation VIP Suite • 7/24 Aktif", icon_url=bot.user.display_avatar.url)
+
     embed.add_field(name="🛡️ Otomatik Teslimat", value="Key girdiğiniz anda rolünüz ve süreniz anında tanımlanır.", inline=False)
-    embed.set_footer(text="GentlemanStation VIP Suite • 7/24 Aktif", icon_url=bot.user.display_avatar.url)
 
     await interaction.response.send_message(embed=embed, view=KeyPanelButtonView())
 
@@ -513,8 +466,11 @@ async def slash_key_paneli(interaction: discord.Interaction):
     sure_gun="Kaç gün VIP verilecek? (Örn: 30, 90) veya Sınırsız Altın VIP için 'lifetime' yazın",
     paket="Paket türü (Varsayılan: VIP)"
 )
-@app_commands.checks.has_permissions(administrator=True)
 async def vip_ver(interaction: discord.Interaction, kullanici: discord.Member, sure_gun: str, paket: str = "VIP"):
+    if not interaction.user.guild_permissions.administrator and interaction.user.id != interaction.guild.owner_id:
+        await interaction.response.send_message("❌ Bu komutu sadece yöneticiler kullanabilir.", ephemeral=True)
+        return
+
     await interaction.response.defer(ephemeral=False)
     
     is_lifetime = sure_gun.strip().lower() in ["lifetime", "sınırsız", "sinirsiz", "omurboyu", "ömürboyu", "unlimited", "0", "altin", "altın"]
@@ -565,7 +521,7 @@ async def vip_ver(interaction: discord.Interaction, kullanici: discord.Member, s
         embed.add_field(name="👑 Paket", value="`👑 SÜRESİZ ALTIN VIP`" if is_lifetime else f"`💎 {final_tier}`", inline=True)
         embed.add_field(name="⏳ Süre", value="`Süresiz (Ömür Boyu)`" if is_lifetime else f"`{days} Gün`", inline=True)
         embed.add_field(name="📅 Bitiş Tarihi", value="`Ömür Boyu`" if is_lifetime else f"`{expires_at.strftime('%d.%m.%Y %H:%M')}`", inline=False)
-        embed.set_footer(text="GentlemanStation VIP Sistemi", icon_url=bot.user.display_avatar.url)
+        embed.set_footer(text="GentlemanStation VIP Sistemi", icon_url=bot.user.display_avatar.url if bot.user else None)
         
         await interaction.followup.send(embed=embed)
     else:
@@ -573,8 +529,11 @@ async def vip_ver(interaction: discord.Interaction, kullanici: discord.Member, s
 
 @bot.tree.command(name="vip-al", description="Kullanıcının GentlemanStation VIP üyeliğini iptal eder.")
 @app_commands.describe(kullanici="VIP üyeliği iptal edilecek üye")
-@app_commands.checks.has_permissions(administrator=True)
 async def vip_al(interaction: discord.Interaction, kullanici: discord.Member):
+    if not interaction.user.guild_permissions.administrator and interaction.user.id != interaction.guild.owner_id:
+        await interaction.response.send_message("❌ Bu komutu sadece yöneticiler kullanabilir.", ephemeral=True)
+        return
+
     await interaction.response.defer(ephemeral=False)
     
     success = revoke_user_vip(str(kullanici.id))
@@ -644,8 +603,11 @@ async def vip_durum(interaction: discord.Interaction, kullanici: discord.Member 
     adet="Kaç adet anahtar üretilsin? (Varsayılan: 1)",
     paket="Paket adı (Varsayılan: VIP)"
 )
-@app_commands.checks.has_permissions(administrator=True)
 async def key_olustur(interaction: discord.Interaction, sure_gun: str, adet: int = 1, paket: str = "VIP"):
+    if not interaction.user.guild_permissions.administrator and interaction.user.id != interaction.guild.owner_id:
+        await interaction.response.send_message("❌ Bu komutu sadece yöneticiler kullanabilir.", ephemeral=True)
+        return
+
     await interaction.response.defer(ephemeral=True)
     
     is_lifetime = sure_gun.strip().lower() in ["lifetime", "sınırsız", "sinirsiz", "omurboyu", "ömürboyu", "unlimited", "0", "altin", "altın"]
@@ -660,7 +622,7 @@ async def key_olustur(interaction: discord.Interaction, sure_gun: str, adet: int
     tier_name = "Lifetime" if is_lifetime else paket.upper()
     keys = []
     
-    for _ in range(min(adet, 20)): # Max 20 keys at once
+    for _ in range(min(adet, 20)):
         k = create_license_key(tier_name, 36500 if is_lifetime else days)
         if k:
             keys.append(k)
@@ -679,6 +641,15 @@ async def key_olustur(interaction: discord.Interaction, sure_gun: str, adet: int
         await interaction.followup.send(embed=embed)
     else:
         await interaction.followup.send("❌ Anahtar oluşturulurken hata oluştu.")
+
+
+# ── Message Event ───────────────────────────────────────────────────
+
+@bot.event
+async def on_message(message: discord.Message):
+    if message.author.bot:
+        return
+    await bot.process_commands(message)
 
 
 # ── Role Event Listener (Otomatik Rol Senkronizasyonu) ──────────────
@@ -715,6 +686,38 @@ async def on_member_update(before: discord.Member, after: discord.Member):
             if not has_other_vip:
                 revoke_user_vip(str(after.id))
                 print(f"[-] {after.display_name} kullanıcısının VIP rolü alındı -> Firebase iptal edildi.")
+
+
+# ── Bot Başlangıç Olayı (on_ready) ───────────────────────────────────
+
+@bot.event
+async def on_ready():
+    print("=" * 50)
+    print(f"[*] GentlemanStation Discord Bot Aktif: {bot.user}")
+    print(f"[*] Bağlı Sunucu Sayısı: {len(bot.guilds)}")
+
+    # Her sunucuya slash komutlarını zorla senkronize et
+    for g in bot.guilds:
+        try:
+            bot.tree.copy_global_to(guild=g)
+            await bot.tree.sync(guild=g)
+            print(f"[+] Slash komutlar ANINDA senkronize edildi: {g.name} ({g.id})")
+        except Exception as e:
+            print(f"[-] Slash senkronizasyon hatası ({g.id}): {e}")
+
+    try:
+        await bot.tree.sync() # Global sync
+        print("[+] Global slash komutlar senkronize edildi.")
+    except Exception as e:
+        print(f"[-] Global sync hatası: {e}")
+
+    # Görevleri Başlat
+    if not rotate_status.is_running():
+        rotate_status.start()
+    if not check_vip_expirations.is_running():
+        check_vip_expirations.start()
+
+    print("=" * 50)
 
 
 # ── Entrypoint ──────────────────────────────────────────────────────
