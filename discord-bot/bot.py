@@ -394,12 +394,20 @@ async def on_member_update(before: discord.Member, after: discord.Member):
                 print(f"[-] {after.display_name} kullanıcısının VIP rolü alındı -> Firebase iptal edildi.")
 
 if __name__ == "__main__":
+    try:
+        from keep_alive import keep_alive
+        keep_alive()
+        print("[+] Web sunucusu 7/24 uyanık tutma servisi başlatıldı.")
+    except Exception as e:
+        print(f"[!] Keep-alive web servisi başlatılamadı: {e}")
+
     cfg = load_config()
-    token = cfg.get("bot_token", "").strip()
+    token = os.environ.get("DISCORD_BOT_TOKEN") or cfg.get("bot_token", "").strip()
     if not token or token == "DISCORD_BOT_TOKENINIZI_BURAYA_YAZIN":
         print("=" * 60)
-        print("HATA: config.json dosyasında 'bot_token' belirtilmemiş!")
+        print("HATA: config.json dosyasında veya DISCORD_BOT_TOKEN çevresel değişkeninde 'bot_token' belirtilmemiş!")
         print("Lütfen Discord Developer Portal'dan aldığınız Bot Token'ı config.json'a yazın.")
         print("=" * 60)
     else:
         bot.run(token)
+
