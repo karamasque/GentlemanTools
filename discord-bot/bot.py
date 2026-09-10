@@ -729,7 +729,11 @@ async def on_ready():
     print(f"[*] GentlemanStation Discord Bot Aktif: {bot.user}")
     print(f"[*] Bağlı Sunucu Sayısı: {len(bot.guilds)}")
 
-    # Her sunucuya slash komutlarını zorla senkronize et
+    cfg = load_config()
+    vip_role_id = cfg.get("roles", {}).get("vip_role_id")
+    lifetime_role_id = cfg.get("roles", {}).get("lifetime_role_id")
+
+    # Mevcut üyeleri tara ve rolleri Firebase ile eşitle
     for g in bot.guilds:
         try:
             bot.tree.copy_global_to(guild=g)
@@ -738,8 +742,25 @@ async def on_ready():
         except Exception as e:
             print(f"[-] Slash senkronizasyon hatası ({g.id}): {e}")
 
+        for member in g.members:
+            if member.bot:
+                continue
+            has_lifetime = any(
+                (str(r.id) == str(lifetime_role_id) and str(lifetime_role_id) != str(vip_role_id))
+                or any(kw in r.name.lower() for kw in ["lifetime", "sınırsız", "omurboyu", "ömür", "gold", "altın"])
+                for r in member.roles
+            )
+            has_vip = any(str(r.id) == str(vip_role_id) or "vip" in r.name.lower() for r in member.roles)
+
+            if has_lifetime:
+                set_user_vip(str(member.id), member.display_name, "Lifetime", 36500, is_lifetime=True)
+                print(f"[+] Başlangıç Senkronizasyonu: {member.display_name} -> 👑 Lifetime VIP")
+            elif has_vip:
+                set_user_vip(str(member.id), member.display_name, "VIP", 30, is_lifetime=False)
+                print(f"[+] Başlangıç Senkronizasyonu: {member.display_name} -> 💎 VIP")
+
     try:
-        await bot.tree.sync() # Global sync
+        await bot.tree.sync()
         print("[+] Global slash komutlar senkronize edildi.")
     except Exception as e:
         print(f"[-] Global sync hatası: {e}")
@@ -751,6 +772,7 @@ async def on_ready():
         check_vip_expirations.start()
 
     print("=" * 50)
+
 
 
 # ── Entrypoint ──────────────────────────────────────────────────────
