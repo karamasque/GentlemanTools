@@ -16,13 +16,36 @@ sys.stdout.reconfigure(line_buffering=True)
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 
 def load_config():
+    data = {}
     if os.path.exists(CONFIG_PATH):
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            pass
+
+    bot_token = os.environ.get("DISCORD_BOT_TOKEN") or data.get("bot_token") or ""
+    firebase_id = os.environ.get("FIREBASE_PROJECT_ID") or data.get("firebase_project_id") or "gentlemanstation"
+    vip_role_id = os.environ.get("VIP_ROLE_ID") or data.get("roles", {}).get("vip_role_id") or "1547368688150126682"
+    lifetime_role_id = os.environ.get("LIFETIME_ROLE_ID") or data.get("roles", {}).get("lifetime_role_id") or "1547368688150126682"
+    admin_role_id = os.environ.get("ADMIN_ROLE_ID") or data.get("admin_role_id") or ""
+    guild_id = os.environ.get("GUILD_ID") or data.get("guild_id") or ""
+
+    return {
+        "bot_token": bot_token,
+        "firebase_project_id": firebase_id,
+        "roles": {
+            "vip_role_id": vip_role_id,
+            "lifetime_role_id": lifetime_role_id
+        },
+        "admin_role_id": admin_role_id,
+        "guild_id": guild_id
+    }
+
 
 config = load_config()
 PROJECT_ID = config.get("firebase_project_id", "gentlemanstation")
+
 
 # Firebase REST Helpers
 def set_user_vip(uid: str, display_name: str, tier: str, days: int = 30, is_lifetime: bool = False):
