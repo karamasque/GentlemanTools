@@ -244,8 +244,8 @@ class KeyPanelButtonView(discord.ui.View):
 # ── Discord Bot Setup ───────────────────────────────────────────────
 
 intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
+# Default intents allow slash commands, buttons, modals, presence, and embeds without portal restrictions
+
 
 class GentlemanBot(commands.Bot):
     def __init__(self):
