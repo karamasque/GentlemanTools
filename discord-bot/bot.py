@@ -244,7 +244,9 @@ class KeyPanelButtonView(discord.ui.View):
 # ── Discord Bot Setup ───────────────────────────────────────────────
 
 intents = discord.Intents.default()
-# Default intents allow slash commands, buttons, modals, presence, and embeds without portal restrictions
+intents.members = True
+intents.message_content = True
+
 
 
 class GentlemanBot(commands.Bot):
@@ -672,9 +674,29 @@ async def on_member_update(before: discord.Member, after: discord.Member):
         if is_gold_role:
             set_user_vip(str(after.id), after.display_name, "Lifetime", 36500, is_lifetime=True)
             print(f"[+] {after.display_name} kullanıcısına Lifetime Altın VIP rolü verildi -> Firebase güncellendi.")
+            try:
+                dm_embed = discord.Embed(
+                    title="👑 Lifetime Altın VIP Tanımlandı!",
+                    description=f"Merhaba **{after.display_name}**,\nSunucuda size Lifetime VIP rolü verildi ve GentlemanStation üyeliğiniz aktif edildi! 🎩",
+                    color=0xFBBF24,
+                    timestamp=datetime.now(timezone.utc)
+                )
+                await after.send(embed=dm_embed)
+            except Exception:
+                pass
         elif str(role.id) == str(vip_role_id) or "vip" in role.name.lower():
             set_user_vip(str(after.id), after.display_name, "VIP", 30, is_lifetime=False)
             print(f"[+] {after.display_name} kullanıcısına 30 Günlük VIP rolü verildi -> Firebase güncellendi.")
+            try:
+                dm_embed = discord.Embed(
+                    title="💎 VIP Üyeliğiniz Tanımlandı!",
+                    description=f"Merhaba **{after.display_name}**,\nSunucuda size VIP rolü verildi ve GentlemanStation 30 günlük üyeliğiniz aktif edildi! 🎩",
+                    color=0x38BDF8,
+                    timestamp=datetime.now(timezone.utc)
+                )
+                await after.send(embed=dm_embed)
+            except Exception:
+                pass
 
     # Rol kaldırıldıysa
     for role in removed_roles:
@@ -686,6 +708,17 @@ async def on_member_update(before: discord.Member, after: discord.Member):
             if not has_other_vip:
                 revoke_user_vip(str(after.id))
                 print(f"[-] {after.display_name} kullanıcısının VIP rolü alındı -> Firebase iptal edildi.")
+                try:
+                    dm_embed = discord.Embed(
+                        title="🚫 VIP Üyeliğiniz Sona Erdi",
+                        description=f"Merhaba **{after.display_name}**,\nVIP rolünüz kaldırıldığı için GentlemanStation üyeliğiniz sona erdi.",
+                        color=0xEF4444,
+                        timestamp=datetime.now(timezone.utc)
+                    )
+                    await after.send(embed=dm_embed)
+                except Exception:
+                    pass
+
 
 
 # ── Bot Başlangıç Olayı (on_ready) ───────────────────────────────────
